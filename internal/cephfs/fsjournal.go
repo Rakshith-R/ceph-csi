@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ceph/ceph-csi/internal/journal"
 	"github.com/ceph/ceph-csi/internal/util"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -84,67 +85,47 @@ func checkVolExists(ctx context.Context,
 
 	if sID != nil || pvID != nil {
 		cloneState, cloneStateErr := volOptions.getCloneState(ctx, volumeID(vid.FsSubvolName))
-		if cloneStateErr != nil {
-			if errors.Is(cloneStateErr, ErrVolumeNotFound) {
-				if pvID != nil {
-					err = cleanupCloneFromSubvolumeSnapshot(
-						ctx, volumeID(pvID.FsSubvolName),
-						volumeID(vid.FsSubvolName),
-						parentVolOpt)
-					if err != nil {
-						return nil, err
-					}
-				}
-				err = j.UndoReservation(ctx, volOptions.MetadataPool,
-					volOptions.MetadataPool, vid.FsSubvolName, volOptions.RequestName)
-				return nil, err
-			}
-			return nil, err
-		}
-		if cloneState == cephFSCloneInprogress {
-			return nil, ErrCloneInProgress
-		}
-		if cloneState == cephFSClonePending {
-			return nil, ErrClonePending
-		}
-		if cloneState == cephFSCloneFailed {
-			err = volOptions.purgeVolume(ctx, volumeID(vid.FsSubvolName), true)
+		if cloneStateErr != nil && errors.Is(cloneStateErr, ErrVolumeNotFound) && pvID != nil {
+
+			err = cleanupCloneFromSubvolumeSnapshot(
+				ctx, volumeID(pvID.FsSubvolName),
+				volumeID(vid.FsSubvolName),
+				parentVolOpt)
 			if err != nil {
-				util.ErrorLog(ctx, "failed to delete volume %s: %v", vid.FsSubvolName, err)
 				return nil, err
 			}
-			if pvID != nil {
-				err = cleanupCloneFromSubvolumeSnapshot(
-					ctx, volumeID(pvID.FsSubvolName),
-					volumeID(vid.FsSubvolName),
-					parentVolOpt)
-				if err != nil {
-					return nil, err
-				}
-			}
+		}
+		if cloneStateErr != nil && errors.Is(cloneStateErr, ErrVolumeNotFound) {
 			err = j.UndoReservation(ctx, volOptions.MetadataPool,
 				volOptions.MetadataPool, vid.FsSubvolName, volOptions.RequestName)
 			return nil, err
 		}
-		if cloneState != cephFSCloneComplete {
-			return nil, fmt.Errorf("clone is not in complete state for %s", vid.FsSubvolName)
+		if cloneStateErr != nil {
+			return nil, cloneStateErr
 		}
+
+		err = checkCephFSCloneState(ctx, cloneState, j, volOptions, parentVolOpt, pvID, sID, vid)
+		if err != nil {
+			return nil, err
+		}
+
 	}
+
 	volOptions.RootPath, err = volOptions.getVolumeRootPathCeph(ctx, volumeID(vid.FsSubvolName))
-	if err != nil {
-		if errors.Is(err, ErrVolumeNotFound) {
-			// If the subvolume is not present, cleanup the stale snapshot
-			// created for clone.
-			if parentVolOpt != nil && pvID != nil {
-				err = cleanupCloneFromSubvolumeSnapshot(ctx, volumeID(pvID.FsSubvolName), volumeID(vid.FsSubvolName), parentVolOpt)
-				if err != nil {
-					return nil, err
-				}
+	if err != nil && errors.Is(err, ErrVolumeNotFound) {
+		// If the subvolume is not present, cleanup the stale snapshot
+		// created for clone.
+		if parentVolOpt != nil && pvID != nil {
+			err = cleanupCloneFromSubvolumeSnapshot(ctx, volumeID(pvID.FsSubvolName), volumeID(vid.FsSubvolName), parentVolOpt)
+			if err != nil {
+				return nil, err
 			}
-			err = j.UndoReservation(ctx, volOptions.MetadataPool,
-				volOptions.MetadataPool, vid.FsSubvolName, volOptions.RequestName)
-			return nil, err
 		}
+		err = j.UndoReservation(ctx, volOptions.MetadataPool,
+			volOptions.MetadataPool, vid.FsSubvolName, volOptions.RequestName)
+		return nil, err
+	}
+	if err != nil {
 		return nil, err
 	}
 
@@ -172,6 +153,47 @@ func checkVolExists(ctx context.Context,
 	}
 
 	return &vid, nil
+}
+
+func checkCephFSCloneState(ctx context.Context,
+	cloneState cephFSCloneState,
+	j *journal.Connection,
+	volOptions,
+	parentVolOpt *volumeOptions,
+	pvID *volumeIdentifier,
+	sID *snapshotIdentifier,
+	vid volumeIdentifier) error {
+
+	switch cloneState {
+	case cephFSCloneInprogress:
+		return ErrCloneInProgress
+
+	case cephFSClonePending:
+		return ErrClonePending
+
+	case cephFSCloneFailed:
+		err := volOptions.purgeVolume(ctx, volumeID(vid.FsSubvolName), true)
+		if err != nil {
+			util.ErrorLog(ctx, "failed to delete volume %s: %v", vid.FsSubvolName, err)
+			return err
+		}
+		if pvID != nil {
+			err = cleanupCloneFromSubvolumeSnapshot(
+				ctx, volumeID(pvID.FsSubvolName),
+				volumeID(vid.FsSubvolName),
+				parentVolOpt)
+			if err != nil {
+				return err
+			}
+		}
+		err = j.UndoReservation(ctx, volOptions.MetadataPool,
+			volOptions.MetadataPool, vid.FsSubvolName, volOptions.RequestName)
+		return err
+	}
+	if cloneState != cephFSCloneComplete {
+		return fmt.Errorf("clone is not in complete state for %s", vid.FsSubvolName)
+	}
+	return nil
 }
 
 // undoVolReservation is a helper routine to undo a name reservation for a CSI VolumeName.

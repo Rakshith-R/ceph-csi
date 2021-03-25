@@ -532,28 +532,29 @@ func (ns *NodeServer) createTargetMountPath(ctx context.Context, mountPath strin
 	// Check if that mount path exists properly
 	notMnt, err := mount.IsNotMountPoint(ns.mounter, mountPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if isBlock {
-				// #nosec
-				pathFile, e := os.OpenFile(mountPath, os.O_CREATE|os.O_RDWR, 0750)
-				if e != nil {
-					util.DebugLog(ctx, "Failed to create mountPath:%s with error: %v", mountPath, err)
-					return notMnt, status.Error(codes.Internal, e.Error())
-				}
-				if err = pathFile.Close(); err != nil {
-					util.DebugLog(ctx, "Failed to close mountPath:%s with error: %v", mountPath, err)
-					return notMnt, status.Error(codes.Internal, err.Error())
-				}
-			} else {
-				// Create a directory
-				if err = util.CreateMountPoint(mountPath); err != nil {
-					return notMnt, status.Error(codes.Internal, err.Error())
-				}
+		switch {
+		case os.IsNotExist(err) && isBlock:
+			// #nosec
+			pathFile, e := os.OpenFile(mountPath, os.O_CREATE|os.O_RDWR, 0750)
+			if e != nil {
+				util.DebugLog(ctx, "Failed to create mountPath:%s with error: %v", mountPath, err)
+				return notMnt, status.Error(codes.Internal, e.Error())
 			}
-			notMnt = true
-		} else {
+			if err = pathFile.Close(); err != nil {
+				util.DebugLog(ctx, "Failed to close mountPath:%s with error: %v", mountPath, err)
+				return notMnt, status.Error(codes.Internal, err.Error())
+			}
+		case os.IsNotExist(err):
+			// Create a directory
+			if err = util.CreateMountPoint(mountPath); err != nil {
+				return notMnt, status.Error(codes.Internal, err.Error())
+			}
+		default:
 			return false, status.Error(codes.Internal, err.Error())
 		}
+	}
+	if os.IsNotExist(err) {
+		notMnt = true
 	}
 	return notMnt, err
 }

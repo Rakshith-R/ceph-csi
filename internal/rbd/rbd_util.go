@@ -608,33 +608,33 @@ func (rv *rbdVolume) flattenRbdImage(ctx context.Context, cr *util.Credentials, 
 	if forceFlatten || (depth >= hardlimit) || (depth >= softlimit) {
 		args := []string{"flatten", rv.String(), "--id", cr.ID, "--keyfile=" + cr.KeyFile, "-m", rv.Monitors}
 		supported, err := addRbdManagerTask(ctx, rv, args)
-		if supported {
-			if err != nil {
-				// discard flattening error if the image does not have any parent
-				rbdFlattenNoParent := fmt.Sprintf("Image %s/%s does not have a parent", rv.Pool, rv.RbdImageName)
-				if strings.Contains(err.Error(), rbdFlattenNoParent) {
-					return nil
-				}
-				util.ErrorLog(ctx, "failed to add task flatten for %s : %v", rv, err)
-				return err
+		switch {
+		case supported && err != nil:
+			// discard flattening error if the image does not have any parent
+			rbdFlattenNoParent := fmt.Sprintf("Image %s/%s does not have a parent", rv.Pool, rv.RbdImageName)
+			if strings.Contains(err.Error(), rbdFlattenNoParent) {
+				return nil
 			}
+			util.ErrorLog(ctx, "failed to add task flatten for %s : %v", rv, err)
+			return err
+		case supported:
 			if forceFlatten || depth >= hardlimit {
 				return fmt.Errorf("%w: flatten is in progress for image %s", ErrFlattenInProgress, rv.RbdImageName)
 			}
-		}
-		if !supported {
+
+		case !supported && (forceFlatten || depth >= hardlimit):
 			util.ErrorLog(ctx, "task manager does not support flatten,image will be flattened once hardlimit is reached: %v", err)
-			if forceFlatten || depth >= hardlimit {
-				err = rv.Connect(cr)
-				if err != nil {
-					return err
-				}
-				err := rv.flatten()
-				if err != nil {
-					util.ErrorLog(ctx, "rbd failed to flatten image %s %s: %v", rv.Pool, rv.RbdImageName, err)
-					return err
-				}
+			err = rv.Connect(cr)
+			if err != nil {
+				return err
 			}
+			err := rv.flatten()
+			if err != nil {
+				util.ErrorLog(ctx, "rbd failed to flatten image %s %s: %v", rv.Pool, rv.RbdImageName, err)
+				return err
+			}
+		case !supported:
+			util.ErrorLog(ctx, "task manager does not support flatten,image will be flattened once hardlimit is reached: %v", err)
 		}
 	}
 	return nil

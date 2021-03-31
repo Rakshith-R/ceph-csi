@@ -310,10 +310,12 @@ func (conn *Connection) CheckReservation(ctx context.Context,
 	}
 
 	// check UUID only encoded value
-	if len(objUUIDAndPool) == uuidEncodedLength {
+	switch len(objUUIDAndPool) {
+	case uuidEncodedLength:
 		objUUID = objUUIDAndPool
 		savedImagePool = journalPool
-	} else { // check poolID/UUID encoding; extract the vol UUID and pool name
+	default:
+		// check poolID/UUID encoding; extract the vol UUID and pool name
 		var buf64 []byte
 		components := strings.Split(objUUIDAndPool, "/")
 		objUUID = components[1]
@@ -409,11 +411,11 @@ func (conn *Connection) UndoReservation(ctx context.Context,
 	// delete volume UUID omap (first, inverse of create order)
 
 	cj := conn.config
-	if volName != "" {
-		if len(volName) < uuidEncodedLength {
-			return fmt.Errorf("unable to parse UUID from %s, too short", volName)
-		}
+	switch {
+	case volName != "" && len(volName) < uuidEncodedLength:
+		return fmt.Errorf("unable to parse UUID from %s, too short", volName)
 
+	case volName != "":
 		imageUUID := volName[len(volName)-36:]
 		if valid := uuid.Parse(imageUUID); valid == nil {
 			return fmt.Errorf("failed parsing UUID in %s", volName)

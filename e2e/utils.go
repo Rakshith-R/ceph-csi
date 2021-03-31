@@ -401,17 +401,18 @@ func pvcDeleteWhenPoolNotFound(pvcPath string, cephfs bool, f *framework.Framewo
 	if err != nil {
 		return err
 	}
-	if cephfs {
+	switch cephfs {
+	case true:
 		err = deleteBackingCephFSVolume(f, pvc)
 		if err != nil {
 			return err
 		}
 		// delete cephfs filesystem
-		err = deletePool("myfs", cephfs, f)
+		err = deletePool(fileSystemName, cephfs, f)
 		if err != nil {
 			return err
 		}
-	} else {
+	case false:
 		err = deleteBackingRBDImage(f, pvc)
 		if err != nil {
 			return err

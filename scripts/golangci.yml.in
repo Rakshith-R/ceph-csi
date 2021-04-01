@@ -153,6 +153,9 @@ linters-settings:
     min-complexity: 40
   dogsled:
     max-blank-identifiers: 3
+  nestif:
+    # minimal complexity of if statements to report, 5 by default
+    min-complexity: 7
 
 linters:
   enable-all: false

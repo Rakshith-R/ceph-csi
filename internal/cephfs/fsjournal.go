@@ -131,7 +131,7 @@ func checkVolExists(ctx context.Context,
 	return &vid, nil
 }
 
-// checkCloneState checks to determine the state of cephFS clones and handles it accordingly
+// checkCloneState checks to determine the state of cephFS clones and handles it accordingly.
 func checkCloneState(ctx context.Context,
 	volOptions,
 	parentVolOpt *volumeOptions,

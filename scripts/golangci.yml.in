@@ -6,7 +6,7 @@
 # options for analysis running
 run:
   build-tags:
-    - @@CEPH_VERSION@@
+    - octopus
 
   # default concurrency is a available CPU number
   concurrency: 4
@@ -155,17 +155,59 @@ linters-settings:
     max-blank-identifiers: 3
 
 linters:
-  enable-all: true
-  disable:
-    - prealloc
-    - dupl
-    - gochecknoinits
-    - gochecknoglobals
-    - godox
-    - wsl
-    - funlen
-    - testpackage
-    # TODO: enable nestif, see: https://github.com/ceph/ceph-csi/issues/1229
+  enable-all: false
+  disable-all: true
+  enable :
+    - asciicheck
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - errcheck
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    # - goerr113
+    - gofmt
+    - goimports
+    - golint
+    - gomnd
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - lll
+    - maligned
+    - misspell
+    - nakedret
     - nestif
+    - nolintlint
+    - rowserrcheck
+    - scopelint
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+  # disable:
+  #   - prealloc
+  #   - dupl
+  #   - gochecknoinits
+  #   - gochecknoglobals
+  #   - godox
+  #   - wsl
+  #   - funlen
+  #   - testpackage
+    # TODO: enable nestif, see: https://github.com/ceph/ceph-csi/issues/1229
+    # - nestif
     # TODO: enable goerr113, see: https://github.com/ceph/ceph-csi/issues/1227
-    - goerr113
+    # - goerr113

@@ -267,17 +267,15 @@ func (ns *NodeServer) stageTransaction(ctx context.Context, req *csi.NodeStageVo
 			return transaction, err
 		}
 	}
-	if !util.CheckKernelSupport(kernelRelease, deepFlattenSupport) {
-		if !skipForceFlatten {
-			feature, err = volOptions.checkImageChainHasFeature(ctx, librbd.FeatureDeepFlatten)
+	if !util.CheckKernelSupport(kernelRelease, deepFlattenSupport) && !skipForceFlatten {
+		feature, err = volOptions.checkImageChainHasFeature(ctx, librbd.FeatureDeepFlatten)
+		if err != nil {
+			return transaction, err
+		}
+		if feature {
+			err = volOptions.flattenRbdImage(ctx, cr, true, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 			if err != nil {
 				return transaction, err
-			}
-			if feature {
-				err = volOptions.flattenRbdImage(ctx, cr, true, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
-				if err != nil {
-					return transaction, err
-				}
 			}
 		}
 	}
@@ -468,9 +466,10 @@ func (ns *NodeServer) mountVolumeToStagePath(ctx context.Context, req *csi.NodeS
 
 	if existingFormat == "" && !staticVol && !readOnly {
 		args := []string{}
-		if fsType == "ext4" {
+		switch fsType {
+		case "ext4":
 			args = []string{"-m0", "-Enodiscard,lazy_itable_init=1,lazy_journal_init=1", devicePath}
-		} else if fsType == "xfs" {
+		case "xfs":
 			args = []string{"-K", devicePath}
 			// always disable reflink
 			// TODO: make enabling an option, see ceph/ceph-csi#1256
@@ -532,26 +531,27 @@ func (ns *NodeServer) createTargetMountPath(ctx context.Context, mountPath strin
 	// Check if that mount path exists properly
 	notMnt, err := mount.IsNotMountPoint(ns.mounter, mountPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			if isBlock {
-				// #nosec
-				pathFile, e := os.OpenFile(mountPath, os.O_CREATE|os.O_RDWR, 0750)
-				if e != nil {
-					util.DebugLog(ctx, "Failed to create mountPath:%s with error: %v", mountPath, err)
-					return notMnt, status.Error(codes.Internal, e.Error())
-				}
-				if err = pathFile.Close(); err != nil {
-					util.DebugLog(ctx, "Failed to close mountPath:%s with error: %v", mountPath, err)
-					return notMnt, status.Error(codes.Internal, err.Error())
-				}
-			} else {
-				// Create a directory
-				if err = util.CreateMountPoint(mountPath); err != nil {
-					return notMnt, status.Error(codes.Internal, err.Error())
-				}
+		isNotExist := os.IsNotExist(err)
+		switch {
+		case isNotExist && isBlock:
+			// #nosec
+			pathFile, e := os.OpenFile(mountPath, os.O_CREATE|os.O_RDWR, 0750)
+			if e != nil {
+				util.DebugLog(ctx, "Failed to create mountPath:%s with error: %v", mountPath, err)
+				return notMnt, status.Error(codes.Internal, e.Error())
+			}
+			if err = pathFile.Close(); err != nil {
+				util.DebugLog(ctx, "Failed to close mountPath:%s with error: %v", mountPath, err)
+				return notMnt, status.Error(codes.Internal, err.Error())
 			}
 			notMnt = true
-		} else {
+		case isNotExist:
+			// Create a directory
+			if err = util.CreateMountPoint(mountPath); err != nil {
+				return notMnt, status.Error(codes.Internal, err.Error())
+			}
+			notMnt = true
+		default:
 			return false, status.Error(codes.Internal, err.Error())
 		}
 	}

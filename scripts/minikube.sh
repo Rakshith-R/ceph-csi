@@ -159,9 +159,9 @@ MINIKUBE_ARCH=${MINIKUBE_ARCH:-"amd64"}
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-"latest"}
 KUBE_VERSION=${KUBE_VERSION:-"latest"}
 CONTAINER_CMD=${CONTAINER_CMD:-"docker"}
-MEMORY=${MEMORY:-"4096"}
-CPUS=${CPUS:-"$(nproc)"}
-VM_DRIVER=${VM_DRIVER:-"virtualbox"}
+MEMORY=${MEMORY:-"16384"}
+CPUS=${CPUS:-"4"}
+VM_DRIVER=${VM_DRIVER:-"kvm2"}
 CNI=${CNI:-"bridge"}
 #configure image repo
 CEPHCSI_IMAGE_REPO=${CEPHCSI_IMAGE_REPO:-"quay.io/cephcsi"}
@@ -173,7 +173,7 @@ if [[ "${VM_DRIVER}" == "kvm2" ]]; then
 fi
 
 #feature-gates for kube
-K8S_FEATURE_GATES=${K8S_FEATURE_GATES:-"BlockVolume=true,CSIBlockVolume=true,VolumeSnapshotDataSource=true,ExpandCSIVolumes=true"}
+K8S_FEATURE_GATES=${K8S_FEATURE_GATES:-"VolumeSnapshotDataSource=true,ExpandCSIVolumes=true"}
 
 #extra-config for kube https://minikube.sigs.k8s.io/docs/reference/configuration/kubernetes/
 EXTRA_CONFIG=${EXTRA_CONFIG:-"--extra-config=apiserver.enable-admission-plugins=PodSecurityPolicy"}
@@ -188,7 +188,7 @@ if [[ "${VM_DRIVER}" == "none" ]] && [[ ! -e "${RESOLV_CONF}" ]]; then
 fi
 # TODO: this might overload --extra-config=kubelet.resolv-conf in case the
 # caller did set EXTRA_CONFIG in the environment
-EXTRA_CONFIG="${EXTRA_CONFIG} --extra-config=kubelet.resolv-conf=${RESOLV_CONF}"
+EXTRA_CONFIG=""#"${EXTRA_CONFIG} --extra-config=kubelet.resolv-conf=${RESOLV_CONF}"
 
 #extra Rook configuration
 ROOK_BLOCK_POOL_NAME=${ROOK_BLOCK_POOL_NAME:-"newrbdpool"}
@@ -210,23 +210,23 @@ up)
         install_kubectl
     fi
 
-    disable_storage_addons
+    # disable_storage_addons
 
     echo "starting minikube with kubeadm bootstrapper"
-    if minikube_supports_psp; then
-        enable_psp
+    # if minikube_supports_psp; then
+    #     enable_psp
         # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG}
-    else
-        # This is a workaround to fix psp issues in minikube >1.6.2 and <1.11.0
-        # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}"
-        DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-        ${minikube} kubectl -- apply -f "$DIR"/psp.yaml
-        ${minikube} stop
-        # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG}
-    fi
+        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --cni="${CNI}" ${EXTRA_CONFIG}
+    # else
+    #     # This is a workaround to fix psp issues in minikube >1.6.2 and <1.11.0
+    #     # shellcheck disable=SC2086
+    #     ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}"
+    #     DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    #     ${minikube} kubectl -- apply -f "$DIR"/psp.yaml
+    #     ${minikube} stop
+    #     # shellcheck disable=SC2086
+    #     ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG}
+    # fi
 
     # create a link so the default dataDirHostPath will work for this
     # environment
@@ -236,6 +236,15 @@ up)
         ${minikube} ssh "sudo mkdir -p /mnt/${DISK}/var/lib/rook;sudo ln -s /mnt/${DISK}/var/lib/rook /var/lib/rook"
         minikube_losetup
     fi
+
+    sudo -S qemu-img create -f raw /var/lib/libvirt/images/minikube-box2-vm-disk1-30G 30G
+
+    sudo virsh -c qemu:///system attach-disk minikube --source /var/lib/libvirt/images/minikube-box2-vm-disk1-30G --target vdb --cache none
+
+    sudo virsh -c qemu:///system reboot --domain minikube
+
+    ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG}
+
     ${minikube} kubectl -- cluster-info
     ;;
 down)

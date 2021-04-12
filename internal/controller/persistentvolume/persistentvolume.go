@@ -208,7 +208,7 @@ func (r ReconcilePersistentVolume) reconcilePV(obj runtime.Object) error {
 // for the volume.
 func (r *ReconcilePersistentVolume) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	pv := &corev1.PersistentVolume{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, pv)
+	err := r.client.Get(ctx, request.NamespacedName, pv)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil

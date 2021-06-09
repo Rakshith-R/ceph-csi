@@ -66,7 +66,7 @@ func createPVCAndvalidatePV(c kubernetes.Interface, pvc *v1.PersistentVolumeClai
 		if apierrs.IsNotFound(err) {
 			return false, nil
 		}
-		err = e2epv.WaitOnPVandPVC(c, pvc.Namespace, pv, pvc)
+		err = e2epv.WaitOnPVandPVC(c, framework.NewTimeoutContextWithDefaults(), pvc.Namespace, pv, pvc)
 		if err != nil {
 			return false, nil
 		}

@@ -206,9 +206,9 @@ func (r ReconcilePersistentVolume) reconcilePV(obj runtime.Object) error {
 
 // Reconcile reconciles the PersistentVolume object and creates a new omap entries
 // for the volume.
-func (r *ReconcilePersistentVolume) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcilePersistentVolume) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	pv := &corev1.PersistentVolume{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, pv)
+	err := r.client.Get(ctx, request.NamespacedName, pv)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil

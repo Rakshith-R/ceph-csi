@@ -18,10 +18,10 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.13.0
 	github.com/pborman/uuid v1.2.1
-	github.com/prometheus/client_golang v1.10.0
+	github.com/prometheus/client_golang v1.11.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+	golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
 	google.golang.org/grpc v1.36.1
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
@@ -30,8 +30,8 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kubernetes v1.21.1
 	k8s.io/mount-utils v0.21.1
-	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
-	sigs.k8s.io/controller-runtime v0.6.0
+	k8s.io/utils v0.0.0-20210527160623-6fdb442a123b
+	sigs.k8s.io/controller-runtime v0.9.0
 )
 
 replace (

@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
+	e2elog "k8s.io/kubernetes/test/e2e/framework/log"
 )
 
 func getStaticPV(name, volName, size, secretName, secretNS, sc, driverName string, blockPV bool, options map[string]string) *v1.PersistentVolume {
@@ -77,7 +78,7 @@ func getStaticPVC(name, pvName, size, ns, sc string, blockPVC bool) *v1.Persiste
 	return pvc
 }
 
-func validateRBDStaticPV(f *framework.Framework, appPath string, isBlock bool) error {
+func validateRBDStaticPV(f *framework.Framework, appPath string, isBlock, checkImgFeat bool) error {
 	opt := make(map[string]string)
 	var (
 		rbdImageName = "test-static-pv"
@@ -142,7 +143,11 @@ func validateRBDStaticPV(f *framework.Framework, appPath string, isBlock bool) e
 	app.Spec.Volumes[0].PersistentVolumeClaim.ClaimName = pvcName
 	err = createApp(f.ClientSet, app, deployTimeout)
 	if err != nil {
-		return err
+		if checkImgFeat && strings.Contains(err.Error(), "missing required parameter imageFeatures") {
+			e2elog.Logf("Static PVC without imageFeatures parameter successfully fails with err %q on App creation", err)
+		} else {
+			return err
+		}
 	}
 
 	err = deletePod(app.Name, app.Namespace, f.ClientSet, deployTimeout)

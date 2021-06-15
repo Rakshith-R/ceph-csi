@@ -166,6 +166,7 @@ var _ = Describe("RBD", func() {
 	f := framework.NewDefaultFramework("rbd")
 	var c clientset.Interface
 	// deploy RBD CSI
+	// /*
 	BeforeEach(func() {
 		if !testRBD || upgradeTesting {
 			Skip("Skipping RBD E2E")
@@ -281,6 +282,16 @@ var _ = Describe("RBD", func() {
 
 	Context("Test RBD CSI", func() {
 		It("Test RBD CSI", func() {
+			// a, err := f.ClientSet.CoreV1().Pods("rook-ceph").Get(context.TODO(), "demo1", metav1.GetOptions{})
+			// fmt.Println(a, err)
+			// m := a.Status.Message
+			// // fmt.Println("\n")
+			// fmt.Println(a.Status.Message, m)
+			// events, err := f.ClientSet.CoreV1().Events("rook-ceph").List(context.TODO(), metav1.ListOptions{})
+			// fmt.Println(events, err)
+			// fmt.Println(strings.Contains(events.String(), "missing required parameter imageFeatures"))
+			// })
+			// /*
 			By("checking provisioner deployment is running", func() {
 				err := waitForDeploymentComplete(rbdDeploymentName, cephCSINamespace, f.ClientSet, deployTimeout)
 				if err != nil {
@@ -302,6 +313,7 @@ var _ = Describe("RBD", func() {
 				// validate created backend rbd images
 				validateRBDImageCount(f, 0, defaultRBDPool)
 			})
+
 		})
 		/*
 				By("create a PVC and validate owner", func() {

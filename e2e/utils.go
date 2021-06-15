@@ -144,7 +144,7 @@ func createPVCAndApp(name string, f *framework.Framework, pvc *v1.PersistentVolu
 	if err != nil {
 		return err
 	}
-	err = createApp(f.ClientSet, app, deployTimeout)
+	err = createApp(f.ClientSet, app, deployTimeout, "")
 	return err
 }
 
@@ -287,7 +287,7 @@ func validateNormalUserPVCAccess(pvcPath string, f *framework.Framework) error {
 		},
 	}
 
-	err = createApp(f.ClientSet, app, deployTimeout)
+	err = createApp(f.ClientSet, app, deployTimeout, "")
 	if err != nil {
 		return err
 	}
@@ -328,7 +328,7 @@ func validateNormalUserPVCAccess(pvcPath string, f *framework.Framework) error {
 func writeDataInPod(app *v1.Pod, opt *metav1.ListOptions, f *framework.Framework) error {
 	app.Namespace = f.UniqueName
 
-	err := createApp(f.ClientSet, app, deployTimeout)
+	err := createApp(f.ClientSet, app, deployTimeout, "")
 	if err != nil {
 		return err
 	}
@@ -388,7 +388,7 @@ func checkDataPersist(pvcPath, appPath string, f *framework.Framework) error {
 		return err
 	}
 	// recreate app and check data persist
-	err = createApp(f.ClientSet, app, deployTimeout)
+	err = createApp(f.ClientSet, app, deployTimeout, "")
 	if err != nil {
 		return err
 	}
@@ -1045,7 +1045,7 @@ func validateController(f *framework.Framework, pvcPath, appPath, scPath string)
 	opt := metav1.ListOptions{
 		LabelSelector: "app=resize-pvc",
 	}
-	err = createApp(f.ClientSet, app, deployTimeout)
+	err = createApp(f.ClientSet, app, deployTimeout, "")
 	if err != nil {
 		return err
 	}

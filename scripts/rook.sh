@@ -1,13 +1,16 @@
 #!/bin/bash -E
 
-ROOK_VERSION=${ROOK_VERSION:-"v1.6.2"}
+ROOK_VERSION=${ROOK_VERSION:-"v1.6.4"}
+CEPHCSI_IMAGE=${CEPHCSI_IMAGE:-"canary"}
+ROOK_CEPH_CLUSTER_IMAGE=${ROOK_CEPH_CLUSTER_IMAGE:-"v16.2.2"}
 ROOK_DEPLOY_TIMEOUT=${ROOK_DEPLOY_TIMEOUT:-300}
 ROOK_URL="https://raw.githubusercontent.com/rook/rook/${ROOK_VERSION}/cluster/examples/kubernetes/ceph"
 ROOK_BLOCK_POOL_NAME=${ROOK_BLOCK_POOL_NAME:-"newrbdpool"}
 KUBECTL_RETRY=5
 KUBECTL_RETRY_DELAY=10
+VAULT_NS=${NS:-"rook-ceph"}
 
-trap log_errors ERR
+# trap log_errors ERR
 
 # log_errors is called on exit (see 'trap' above) and tries to provide
 # sufficient information to debug deployment problems
@@ -81,31 +84,35 @@ kubectl_retry() {
 }
 
 function deploy_rook() {
-        kubectl_retry create -f "${ROOK_URL}/common.yaml"
 
-        # If rook version is > 1.5 , we will apply CRDs.
+        If rook version is > 1.5 , we will apply CRDs.
         ROOK_MAJOR=$(rook_version 1)
         ROOK_MINOR=$(rook_version 2)
         if  [ "${ROOK_MAJOR}" -eq 1 ] && [ "${ROOK_MINOR}" -ge 5 ];
-	  then
-	      kubectl_retry create -f "${ROOK_URL}/crds.yaml"
-	  fi
-        kubectl_retry create -f "${ROOK_URL}/operator.yaml"
-        # Override the ceph version which rook installs by default.
-        if  [ -z "${ROOK_CEPH_CLUSTER_IMAGE}" ]
-        then
-            kubectl_retry create -f "${ROOK_URL}/cluster-test.yaml"
-        else
-            ROOK_CEPH_CLUSTER_VERSION_IMAGE_PATH="image: ${ROOK_CEPH_CLUSTER_IMAGE}"
-            TEMP_DIR="$(mktemp -d)"
-            curl -o "${TEMP_DIR}"/cluster-test.yaml "${ROOK_URL}/cluster-test.yaml"
-            sed -i "s|image.*|${ROOK_CEPH_CLUSTER_VERSION_IMAGE_PATH}|g" "${TEMP_DIR}"/cluster-test.yaml
-            sed -i "s/config: |/config: |\n    \[mon\]\n    mon_warn_on_insecure_global_id_reclaim_allowed = false/g" "${TEMP_DIR}"/cluster-test.yaml
-            sed -i "s/healthCheck:/healthCheck:\n    livenessProbe:\n      mon:\n        disabled: true\n      mgr:\n        disabled: true\n      mds:\n        disabled: true/g" "${TEMP_DIR}"/cluster-test.yaml
-			cat  "${TEMP_DIR}"/cluster-test.yaml
-            kubectl_retry create -f "${TEMP_DIR}/cluster-test.yaml"
-            rm -rf "${TEMP_DIR}"
-        fi
+		then
+			kubectl_retry create -f "${ROOK_URL}/crds.yaml"
+		fi
+        kubectl_retry create -f "${ROOK_URL}/common.yaml"
+		TEMP_DIR="$(mktemp -d)"
+
+
+
+		ROOK_CEPHCSI_IMAGE="ROOK_CSI_CEPH_IMAGE: \"quay.io/cephcsi/cephcsi:${CEPHCSI_IMAGE}\""
+	    curl -o "${TEMP_DIR}"/operator.yaml "${ROOK_URL}/operator.yaml"
+	   	sed -i 's|# CSI_LOG_LEVEL: "0"|CSI_LOG_LEVEL: "5"|g' "${TEMP_DIR}"/operator.yaml
+		sed -i 's|ROOK_CSI_ALLOW_UNSUPPORTED_VERSION: "false"|ROOK_CSI_ALLOW_UNSUPPORTED_VERSION: "true"|g' "${TEMP_DIR}"/operator.yaml
+		sed -i "s|# ROOK_CSI_CEPH_IMAGE: \"quay.io/cephcsi/cephcsi:v3.3.1\"|${ROOK_CEPHCSI_IMAGE}|g" "${TEMP_DIR}"/operator.yaml
+		kubectl_retry create -f "${TEMP_DIR}/operator.yaml"
+	    ROOK_CEPH_CLUSTER_VERSION_IMAGE_PATH="image: \"ceph/ceph:${ROOK_CEPH_CLUSTER_IMAGE}\""
+
+
+        curl -o "${TEMP_DIR}"/cluster-test.yaml "${ROOK_URL}/cluster-test.yaml"
+        sed -i "s|image.*|${ROOK_CEPH_CLUSTER_VERSION_IMAGE_PATH}|g" "${TEMP_DIR}"/cluster-test.yaml
+		sed -i "s/config: |/config: |\n    \[mon\]\n    mon_warn_on_insecure_global_id_reclaim_allowed = false/g" "${TEMP_DIR}"/cluster-test.yaml
+		#cat  "${TEMP_DIR}"/cluster-test.yaml
+        kubectl_retry create -f "${TEMP_DIR}/cluster-test.yaml"
+        rm -rf "${TEMP_DIR}"
+
 
         kubectl_retry create -f "${ROOK_URL}/toolbox.yaml"
         kubectl_retry create -f "${ROOK_URL}/filesystem-test.yaml"
@@ -133,12 +140,6 @@ function teardown_rook() {
 	kubectl delete -f "${ROOK_URL}/toolbox.yaml"
 	kubectl delete -f "${ROOK_URL}/cluster-test.yaml"
 	kubectl delete -f "${ROOK_URL}/operator.yaml"
-	ROOK_MAJOR=$(rook_version 1)
-      ROOK_MINOR=$(rook_version 2)
-      if  [ "${ROOK_MAJOR}" -eq 1 ] && [ "${ROOK_MINOR}" -ge 5 ];
-	then
-	      kubectl delete -f "${ROOK_URL}/crds.yaml"
-	fi
 	kubectl delete -f "${ROOK_URL}/common.yaml"
 }
 
@@ -233,6 +234,30 @@ function check_rbd_stat() {
 	echo ""
 }
 
+function create_vault() {
+	DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+	sed -i "s|vault.default|vault.${NS}|g" "$DIR"/../examples/kms/vault/*
+	sed -i "s|value: default|value: ${NS}|g" "$DIR"/../examples/kms/vault/*
+	sed -i "s|namespace: default|namespace: ${NS}|g" "$DIR"/../examples/kms/vault/*
+	kubectl_retry create -f "$DIR/../examples/kms/vault/csi-kms-connection-details.yaml"
+	kubectl_retry create -f "$DIR/../examples/kms/vault/csi-vaulttokenreview-rbac.yaml"
+	kubectl_retry  create -f "$DIR/../examples/kms/vault/kms-config.yaml"
+	kubectl_retry create -f "$DIR/../examples/kms/vault/tenant-config.yaml"
+	kubectl_retry create -f "$DIR/../examples/kms/vault/tenant-token.yaml"
+	kubectl_retry create -f "$DIR/../examples/kms/vault/vault.yaml"
+	kubectl_retry create -f "$DIR/../examples/kms/vault/vault-psp.yaml"
+}
+
+function delete_vault() {
+	kubectl delete -f "$DIR/../examples/kms/vault/csi-kms-connection-details.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/csi-vaulttokenreview-rbac.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/kms-config.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/tenant-config.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/tenant-token.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/vault.yaml"
+	kubectl delete -f "$DIR/../examples/kms/vault/vault-psp.yaml"
+}
+
 case "${1:-}" in
 deploy)
 	deploy_rook
@@ -246,7 +271,14 @@ create-block-pool)
 delete-block-pool)
 	delete_block_pool
 	;;
+vault)
+	create_vault
+	;;
+vault-down)
+	delete_vault
+	;;
 *)
+	echo "${ROOK_CEPH_CLUSTER_IMAGE}"
 	echo " $0 [command]
 Available Commands:
   deploy             Deploy a rook

@@ -20,7 +20,7 @@ func (ioctx *IOContext) SetPoolFullTry() error {
 	if err := ioctx.validate(); err != nil {
 		return err
 	}
-	C.rados_set_pool_full_try(ioctx.ioctx)
+	// C.rados_set_pool_full_try(ioctx.ioctx)
 	return nil
 }
 
@@ -32,6 +32,6 @@ func (ioctx *IOContext) UnsetPoolFullTry() error {
 	if err := ioctx.validate(); err != nil {
 		return err
 	}
-	C.rados_unset_pool_full_try(ioctx.ioctx)
+	// C.rados_unset_pool_full_try(ioctx.ioctx)
 	return nil
 }

@@ -168,7 +168,7 @@ func (ns *NodeServer) NodeStageVolume(ctx context.Context, req *csi.NodeStageVol
 
 	// throw error when imageFeatures parameter is missing
 	// for backward compatibility, ignore error for non-static volumes from older cephcsi version
-	if _, ok := req.GetVolumeContext()["imageFeatures"]; !ok && staticVol {
+	if imageFeatures, ok := req.GetVolumeContext()["imageFeatures"]; staticVol && (!ok || imageFeatures == "") {
 		return nil, status.Error(codes.InvalidArgument, "missing required parameter imageFeatures")
 	}
 

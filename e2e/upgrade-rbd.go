@@ -265,7 +265,7 @@ var _ = Describe("RBD Upgrade Testing", func() {
 				// validate if the app gets bound to a pvc created by
 				// an earlier release.
 				app.Labels = label
-				err = createApp(f.ClientSet, app, deployTimeout)
+				err = createApp(f.ClientSet, app, deployTimeout, "")
 				if err != nil {
 					e2elog.Failf("failed to create application with error %v", err)
 				}
@@ -391,7 +391,7 @@ var _ = Describe("RBD Upgrade Testing", func() {
 						e2elog.Failf("failed to expand pvc with error %v", err)
 					}
 					// wait for application pod to come up after resize
-					err = waitForPodInRunningState(app.Name, app.Namespace, f.ClientSet, deployTimeout)
+					err = waitForPodInRunningState(app.Name, app.Namespace, f.ClientSet, deployTimeout, "")
 					if err != nil {
 						e2elog.Failf("timeout waiting for pod to be in running state with error %v", err)
 					}

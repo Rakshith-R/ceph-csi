@@ -1157,17 +1157,17 @@ func (cs *ControllerServer) doSnapshotClone(
 	err = j.StoreImageID(ctx, rbdSnap.JournalPool, rbdSnap.ReservedID, cloneRbd.ImageID)
 	if err != nil {
 		util.ErrorLog(ctx, "failed to reserve volume id: %v", err)
-		return ready, cloneRbd, err
+		return false, cloneRbd, err
 	}
 
 	err = cloneRbd.flattenRbdImage(ctx, cr, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 	if err != nil {
 		if errors.Is(err, ErrFlattenInProgress) {
-			return ready, cloneRbd, nil
+			return false, cloneRbd, nil
 		}
-		return ready, cloneRbd, err
+		return false, cloneRbd, err
 	}
-	ready = true
+	ready = false
 	return ready, cloneRbd, nil
 }
 

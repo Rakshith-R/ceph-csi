@@ -192,9 +192,12 @@ func checkSnapCloneExists(
 
 	// check snapshot exists if not create it
 	err = vol.checkSnapExists(rbdSnap)
-	if errors.Is(err, ErrSnapNotFound) {
+	if errors.Is(err, ErrSnapNotFound) || testsnap == "1" {
 		// create snapshot
 		sErr := vol.createSnapshot(ctx, rbdSnap)
+		if testsnap == "1" {
+			sErr = fmt.Errorf("Error 1")
+		}
 		if sErr != nil {
 			util.ErrorLog(ctx, "failed to create snapshot %s: %v", rbdSnap, sErr)
 			err = undoSnapshotCloning(ctx, parentVol, rbdSnap, vol, cr)
@@ -205,14 +208,21 @@ func checkSnapCloneExists(
 		return false, err
 	}
 
-	if vol.ImageID == "" {
+	if vol.ImageID == "" || testsnap == "2" || testsnap == "3" {
 		sErr := vol.getImageID()
+		if testsnap == "2" {
+			sErr = fmt.Errorf("Error 2")
+		}
 		if sErr != nil {
 			util.ErrorLog(ctx, "failed to get image id %s: %v", vol, sErr)
 			err = undoSnapshotCloning(ctx, parentVol, rbdSnap, vol, cr)
 			return false, err
 		}
+
 		sErr = j.StoreImageID(ctx, vol.JournalPool, vol.ReservedID, vol.ImageID)
+		if testsnap == "3" {
+			sErr = fmt.Errorf("Error 3")
+		}
 		if sErr != nil {
 			util.ErrorLog(ctx, "failed to store volume id %s: %v", vol, sErr)
 			err = undoSnapshotCloning(ctx, parentVol, rbdSnap, vol, cr)

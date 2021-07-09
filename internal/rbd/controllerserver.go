@@ -19,6 +19,7 @@ package rbd
 import (
 	"context"
 	"errors"
+	"os"
 	"strconv"
 
 	csicommon "github.com/ceph/ceph-csi/internal/csi-common"
@@ -857,6 +858,9 @@ func (cs *ControllerServer) ValidateVolumeCapabilities(
 	}, nil
 }
 
+var retready = true
+var testsnap = os.Getenv("BLK")
+
 // CreateSnapshot creates the snapshot in backend and stores metadata in store.
 func (cs *ControllerServer) CreateSnapshot(
 	ctx context.Context,
@@ -956,7 +960,12 @@ func (cs *ControllerServer) CreateSnapshot(
 	if err != nil {
 		return nil, err
 	}
-
+	if retready {
+		ready = false
+		retready = false
+	} else {
+		retready = true
+	}
 	return &csi.CreateSnapshotResponse{
 		Snapshot: &csi.Snapshot{
 			SizeBytes:      vol.VolSize,

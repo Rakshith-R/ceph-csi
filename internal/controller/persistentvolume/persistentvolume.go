@@ -65,6 +65,7 @@ func newPVReconciler(mgr manager.Manager, config ctrl.Config) reconcile.Reconcil
 		config: config,
 		Locks:  util.NewVolumeLocks(),
 	}
+
 	return r
 }
 
@@ -83,6 +84,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return fmt.Errorf("failed to watch the changes: %w", err)
 	}
+
 	return nil
 }
 
@@ -95,6 +97,7 @@ func (r *ReconcilePersistentVolume) getCredentials(
 	if name == "" || namespace == "" {
 		errStr := "secret name or secret namespace is empty"
 		util.ErrorLogMsg(errStr)
+
 		return nil, errors.New(errStr)
 	}
 	secret := &corev1.Secret{}
@@ -113,8 +116,10 @@ func (r *ReconcilePersistentVolume) getCredentials(
 	cr, err = util.NewUserCredentials(credentials)
 	if err != nil {
 		util.ErrorLogMsg("failed to get user credentials %s", err)
+
 		return nil, err
 	}
+
 	return cr, nil
 }
 
@@ -129,6 +134,7 @@ func checkStaticVolume(pv *corev1.PersistentVolume) (bool, error) {
 			return false, fmt.Errorf("failed to parse preProvisionedVolume: %w", err)
 		}
 	}
+
 	return static, nil
 }
 
@@ -150,6 +156,7 @@ func (r ReconcilePersistentVolume) storeVolumeIDInPV(
 	}
 	pv.Labels[rbd.PVReplicatedLabelKey] = rbd.PVReplicatedLabelValue
 	pv.Annotations[rbd.PVVolumeHandleAnnotationKey] = newVolumeID
+
 	return r.client.Update(ctx, pv)
 }
 
@@ -196,6 +203,7 @@ func (r ReconcilePersistentVolume) reconcilePV(ctx context.Context, obj runtime.
 	cr, err := r.getCredentials(ctx, secretName, secretNamespace)
 	if err != nil {
 		util.ErrorLogMsg("failed to get credentials from secret %s", err)
+
 		return err
 	}
 	defer cr.DeleteCredentials()
@@ -203,15 +211,18 @@ func (r ReconcilePersistentVolume) reconcilePV(ctx context.Context, obj runtime.
 	rbdVolID, err := rbd.RegenerateJournal(imageName, volumeHandler, pool, journalPool, requestName, cr)
 	if err != nil {
 		util.ErrorLogMsg("failed to regenerate journal %s", err)
+
 		return err
 	}
 	if rbdVolID != volumeHandler {
 		err = r.storeVolumeIDInPV(ctx, pv, rbdVolID)
 		if err != nil {
 			util.ErrorLogMsg("failed to store volumeID in PV %s", err)
+
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -225,6 +236,7 @@ func (r *ReconcilePersistentVolume) Reconcile(ctx context.Context,
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
+
 		return reconcile.Result{}, err
 	}
 	// Check if the object is under deletion
@@ -236,5 +248,6 @@ func (r *ReconcilePersistentVolume) Reconcile(ctx context.Context,
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+
 	return reconcile.Result{}, nil
 }

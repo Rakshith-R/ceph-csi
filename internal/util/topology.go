@@ -102,6 +102,7 @@ func GetTopologyFromDomainLabels(domainLabels, nodeName, driverName string) (map
 				missingLabels = append(missingLabels, key)
 			}
 		}
+
 		return nil, fmt.Errorf("missing domain labels %v on node %q", missingLabels, nodeName)
 	}
 
@@ -175,6 +176,7 @@ func MatchTopologyForPool(topologyPools *[]TopologyConstrainedPool,
 	for _, value := range *topologyPools {
 		if value.PoolName == poolName {
 			topologyPool = append(topologyPool, value)
+
 			break
 		}
 	}
@@ -232,6 +234,7 @@ func matchPoolToTopology(topologyPools *[]TopologyConstrainedPool, topology *csi
 		for _, segment := range topologyPool.DomainSegments {
 			if domainValue, ok := domainMap[segment.DomainLabel]; !ok || domainValue != segment.DomainValue {
 				mismatch = true
+
 				break
 			}
 		}

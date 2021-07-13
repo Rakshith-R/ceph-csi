@@ -81,12 +81,14 @@ func getMons(ns string, c kubernetes.Interface) ([]string, error) {
 			svcList.Items[i].Spec.Ports[0].Port)
 		services = append(services, s)
 	}
+
 	return services, nil
 }
 
 func getStorageClass(path string) (scv1.StorageClass, error) {
 	sc := scv1.StorageClass{}
 	err := unmarshal(path, &sc)
+
 	return sc, err
 }
 
@@ -100,6 +102,7 @@ func getSecret(path string) (v1.Secret, error) {
 			return sc, err
 		}
 	}
+
 	return sc, nil
 }
 
@@ -112,6 +115,7 @@ func deleteResource(scPath string) error {
 	if err != nil {
 		e2elog.Logf("failed to delete %s %v", scPath, err)
 	}
+
 	return err
 }
 
@@ -126,6 +130,7 @@ func unmarshal(fileName string, obj interface{}) error {
 	}
 
 	err = json.Unmarshal(data, obj)
+
 	return err
 }
 
@@ -147,6 +152,7 @@ func createPVCAndApp(
 		return err
 	}
 	err = createApp(f.ClientSet, app, deployTimeout)
+
 	return err
 }
 
@@ -164,6 +170,7 @@ func deletePVCAndApp(name string, f *framework.Framework, pvc *v1.PersistentVolu
 		return err
 	}
 	err = deletePVCAndValidatePV(f.ClientSet, pvc, deployTimeout)
+
 	return err
 }
 
@@ -197,6 +204,7 @@ func validatePVCAndAppBinding(pvcPath, appPath string, f *framework.Framework) e
 		return err
 	}
 	err = deletePVCAndApp("", f, pvc, app)
+
 	return err
 }
 
@@ -212,6 +220,7 @@ func getMountType(appName, appNamespace, mountPath string, f *framework.Framewor
 	if stdErr != "" {
 		return strings.TrimSpace(stdOut), fmt.Errorf(stdErr)
 	}
+
 	return strings.TrimSpace(stdOut), nil
 }
 
@@ -303,6 +312,7 @@ func validateNormalUserPVCAccess(pvcPath string, f *framework.Framework) error {
 	}
 
 	err = deletePVCAndValidatePV(f.ClientSet, pvc, deployTimeout)
+
 	return err
 }
 
@@ -390,6 +400,7 @@ func checkDataPersist(pvcPath, appPath string, f *framework.Framework) error {
 	}
 
 	err = deletePVCAndApp("", f, pvc, app)
+
 	return err
 }
 
@@ -426,6 +437,7 @@ func pvcDeleteWhenPoolNotFound(pvcPath string, cephfs bool, f *framework.Framewo
 		}
 	}
 	err = deletePVCAndValidatePV(f.ClientSet, pvc, deployTimeout)
+
 	return err
 }
 
@@ -468,6 +480,7 @@ func checkMountOptions(pvcPath, appPath string, f *framework.Framework, mountFla
 	}
 
 	err = deletePVCAndApp("", f, pvc, app)
+
 	return err
 }
 
@@ -478,6 +491,7 @@ func addTopologyDomainsToDSYaml(template, labels string) string {
 
 func oneReplicaDeployYaml(template string) string {
 	var re = regexp.MustCompile(`(\s+replicas:) \d+`)
+
 	return re.ReplaceAllString(template, `$1 1`)
 }
 
@@ -491,12 +505,14 @@ func writeDataAndCalChecksum(app *v1.Pod, opt *metav1.ListOptions, f *framework.
 	err := writeDataInPod(app, opt, f)
 	if err != nil {
 		e2elog.Logf("failed to write data in the pod with error %v", err)
+
 		return "", err
 	}
 
 	checkSum, err := calculateSHA512sum(f, app, filePath, opt)
 	if err != nil {
 		e2elog.Logf("failed to calculate checksum with error %v", err)
+
 		return checkSum, err
 	}
 
@@ -504,6 +520,7 @@ func writeDataAndCalChecksum(app *v1.Pod, opt *metav1.ListOptions, f *framework.
 	if err != nil {
 		e2elog.Failf("failed to delete pod with error %v", err)
 	}
+
 	return checkSum, nil
 }
 
@@ -1128,6 +1145,7 @@ func validateController(f *framework.Framework, pvcPath, appPath, scPath string)
 	if err != nil {
 		return err
 	}
+
 	return deleteResource(rbdExamplePath + "storageclass.yaml")
 }
 

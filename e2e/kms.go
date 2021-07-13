@@ -98,5 +98,6 @@ func (vc *vaultConfig) getPassphrase(f *framework.Framework, key string) (string
 		LabelSelector: "app=vault",
 	}
 	stdOut, stdErr := execCommandInPodAndAllowFail(f, cmd, cephCSINamespace, &opt)
+
 	return strings.TrimSpace(stdOut), strings.TrimSpace(stdErr)
 }

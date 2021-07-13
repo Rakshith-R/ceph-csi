@@ -1295,6 +1295,7 @@ var _ = Describe("RBD", func() {
 					fmt.Printf("Checking prefix on %s\n", imgName)
 					if strings.HasPrefix(imgName, volumeNamePrefix) {
 						foundIt = true
+
 						break
 					}
 				}

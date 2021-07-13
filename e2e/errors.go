@@ -32,5 +32,6 @@ func isRetryableAPIError(err error) bool {
 	if _, shouldRetry := apierrors.SuggestsClientDelay(err); shouldRetry {
 		return true
 	}
+
 	return false
 }

@@ -141,6 +141,7 @@ func TestStdVaultToCSIConfig(t *testing.T) {
 	err := json.Unmarshal([]byte(vaultConfigMap), sv)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
+
 		return
 	}
 

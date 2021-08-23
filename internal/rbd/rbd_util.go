@@ -564,33 +564,40 @@ func deleteImage(ctx context.Context, pOpts *rbdVolume, cr *util.Credentials) er
 
 		return err
 	}
+	defer func() {
+		if err != nil {
+			if nErr := librbd.TrashRestore(pOpts.ioctx, pOpts.ImageID, image); nErr != nil {
+				util.ErrorLog(ctx, "failed to restore rbd image: %s from trash: %v", pOpts, err)
+			}
+		}
+	}()
 
 	// attempt to use Ceph manager based deletion support if available
 
-	args := []string{
-		"trash", "remove",
-		pOpts.getTrashPath(),
-		"--id", cr.ID,
-		"--keyfile=" + cr.KeyFile,
-		"-m", pOpts.Monitors,
-	}
-	rbdCephMgrSupported, err := addRbdManagerTask(ctx, pOpts, args)
-	if rbdCephMgrSupported && err != nil {
-		util.ErrorLog(ctx, "failed to add task to delete rbd image: %s, %v", pOpts, err)
+	// args := []string{
+	// 	"trash", "remove",
+	// pOpts.getTrashPath(),
+	// 	"--id", cr.ID,
+	// 	"--keyfile=" + cr.KeyFile,
+	// 	"-m", pOpts.Monitors,
+	// }
+	// rbdCephMgrSupported, err := addRbdManagerTask(ctx, pOpts, args)
+	// if rbdCephMgrSupported && err != nil {
+	// 	util.ErrorLog(ctx, "failed to add task to delete rbd image: %s, %v", pOpts, err)
 
-		return err
-	}
+	// 	return err
+	// }
 
-	if !rbdCephMgrSupported {
-		err = librbd.TrashRemove(pOpts.ioctx, pOpts.ImageID, true)
-		if err != nil {
-			util.ErrorLog(ctx, "failed to delete rbd image: %s, %v", pOpts, err)
+	// if !rbdCephMgrSupported {
+	// 	err = librbd.TrashRemove(pOpts.ioctx, pOpts.ImageID, true)
+	// 	if err != nil {
+	// 		util.ErrorLog(ctx, "failed to delete rbd image: %s, %v", pOpts, err)
 
-			return err
-		}
-	}
-
-	return nil
+	// 		return err
+	// 	}
+	// }
+	err = fmt.Errorf("my error :)")
+	return err
 }
 
 func (rv *rbdVolume) getCloneDepth(ctx context.Context) (uint, error) {

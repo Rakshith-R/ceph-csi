@@ -37,7 +37,7 @@ CSI_IMAGE_VERSION=$(shell . $(CURDIR)/build.env ; echo $${CSI_IMAGE_VERSION})
 CSI_IMAGE=$(CSI_IMAGE_NAME):$(CSI_IMAGE_VERSION)
 
 # Pass USE_PULLED_IMAGE=yes to skip building a new :test or :devel image.
-USE_PULLED_IMAGE?=no
+USE_PULLED_IMAGE?=yes
 
 $(info cephcsi image settings: $(CSI_IMAGE_NAME) version $(CSI_IMAGE_VERSION))
 ifndef GIT_COMMIT

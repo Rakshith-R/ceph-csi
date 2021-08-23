@@ -2,6 +2,26 @@
 
 #Based on ideas from https://github.com/rook/rook/blob/master/tests/scripts/minikube.sh
 
+# configure minikube
+MINIKUBE_ARCH=${MINIKUBE_ARCH:-"amd64"}
+MINIKUBE_VERSION=${MINIKUBE_VERSION:-"v1.22.0"}
+KUBE_VERSION=${KUBE_VERSION:-"v1.21.2"}
+CONTAINER_CMD=${CONTAINER_CMD:-"docker"}
+MEMORY=${MEMORY:-"12384"}
+CPUS=${CPUS:-"4"}
+VM_DRIVER=${VM_DRIVER:-"kvm2"}
+CNI=${CNI:-"auto"}
+PROF=${PROF:-"m1"}
+NETWORK=${NETWORK:-"mirror"}
+#configure image repo
+CEPHCSI_IMAGE_REPO=${CEPHCSI_IMAGE_REPO:-"quay.io/cephcsi1"}
+K8S_IMAGE_REPO=${K8S_IMAGE_REPO:-"k8s.gcr.io/sig-storage"}
+DISK="sda1"
+if [[ "${VM_DRIVER}" == "kvm2" ]]; then
+    # use vda1 instead of sda1 when running with the libvirt driver
+    DISK="vda1"
+fi
+
 function wait_for_ssh() {
     local tries=100
     while ((tries > 0)); do
@@ -115,12 +135,6 @@ function validate_container_cmd() {
     fi
 }
 
-function enable_psp() {
-    echo "prepare minikube to support pod security policies"
-    mkdir -p "$HOME"/.minikube/files/etc/kubernetes/addons
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-    cp "$DIR"/psp.yaml "$HOME"/.minikube/files/etc/kubernetes/addons/psp.yaml
-}
 
 # Storage providers and the default storage class is not needed for Ceph-CSI
 # testing. In order to reduce resources and potential conflicts between storage
@@ -130,50 +144,23 @@ function disable_storage_addons() {
     ${minikube} addons disable storage-provisioner 2>/dev/null || true
 }
 
-function minikube_supports_psp() {
-    local MINIKUBE_MAJOR
-    local MINIKUBE_MINOR
-    local MINIKUBE_PATCH
-    MINIKUBE_MAJOR=$(minikube_version 1)
-    MINIKUBE_MINOR=$(minikube_version 2)
-    MINIKUBE_PATCH=$(minikube_version 3)
-    if [[ "${MINIKUBE_MAJOR}" -ge 1 ]] && [[ "${MINIKUBE_MINOR}" -ge 11 ]] && [[ "${MINIKUBE_PATCH}" -ge 1 ]] || [[ "${MINIKUBE_MAJOR}" -ge 1 ]] && [[ "${MINIKUBE_MINOR}" -ge 12 ]]; then
-        return 1
-    fi
-    return 0
+# minikube has the Busybox losetup, and that does not work with raw-block PVCs.
+# Copy the host losetup executable and hope it works.
+#
+# See https://github.com/kubernetes/minikube/issues/8284
+function minikube_losetup() {
+    # scp should not ask for any confirmation
+    scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i "$(${minikube} ssh-key)" /sbin/losetup docker@"$(${minikube} ip)":losetup
+    # replace /sbin/losetup symlink with the executable
+    ${minikube} ssh 'sudo sh -c "rm -f /sbin/losetup && cp ~docker/losetup /sbin"'
 }
 
-# configure minikube
-MINIKUBE_ARCH=${MINIKUBE_ARCH:-"amd64"}
-MINIKUBE_VERSION=${MINIKUBE_VERSION:-"latest"}
-KUBE_VERSION=${KUBE_VERSION:-"latest"}
-CONTAINER_CMD=${CONTAINER_CMD:-"docker"}
-MEMORY=${MEMORY:-"4096"}
-MINIKUBE_WAIT_TIMEOUT=${MINIKUBE_WAIT_TIMEOUT:-"10m"}
-MINIKUBE_WAIT=${MINIKUBE_WAIT:-"all"}
-CPUS=${CPUS:-"$(nproc)"}
-VM_DRIVER=${VM_DRIVER:-"virtualbox"}
-CNI=${CNI:-"bridge"}
-#configure image repo
-CEPHCSI_IMAGE_REPO=${CEPHCSI_IMAGE_REPO:-"quay.io/cephcsi"}
-K8S_IMAGE_REPO=${K8S_IMAGE_REPO:-"k8s.gcr.io/sig-storage"}
-DISK="sda1"
-if [[ "${VM_DRIVER}" == "kvm2" ]]; then
-    # use vda1 instead of sda1 when running with the libvirt driver
-    DISK="vda1"
-fi
-#configure csi sidecar version
-CSI_ATTACHER_VERSION=${CSI_ATTACHER_VERSION:-"v3.2.1"}
-CSI_SNAPSHOTTER_VERSION=${CSI_SNAPSHOTTER_VERSION:-"v4.1.1"}
-CSI_PROVISIONER_VERSION=${CSI_PROVISIONER_VERSION:-"v2.2.2"}
-CSI_RESIZER_VERSION=${CSI_RESIZER_VERSION:-"v1.2.0"}
-CSI_NODE_DRIVER_REGISTRAR_VERSION=${CSI_NODE_DRIVER_REGISTRAR_VERSION:-"v2.2.0"}
 
 #feature-gates for kube
 K8S_FEATURE_GATES=${K8S_FEATURE_GATES:-"ExpandCSIVolumes=true"}
 
 #extra-config for kube https://minikube.sigs.k8s.io/docs/reference/configuration/kubernetes/
-EXTRA_CONFIG_PSP="--extra-config=apiserver.enable-admission-plugins=PodSecurityPolicy"
+EXTRA_CONFIG=${EXTRA_CONFIG:-"--extra-config=apiserver.enable-admission-plugins=PodSecurityPolicy"}
 
 # kubelet.resolv-conf needs to point to a file, not a symlink
 # the default minikube VM has /etc/resolv.conf -> /run/systemd/resolve/resolv.conf
@@ -185,13 +172,10 @@ if [[ "${VM_DRIVER}" == "none" ]] && [[ ! -e "${RESOLV_CONF}" ]]; then
 fi
 # TODO: this might overload --extra-config=kubelet.resolv-conf in case the
 # caller did set EXTRA_CONFIG in the environment
-EXTRA_CONFIG="${EXTRA_CONFIG} --extra-config=kubelet.resolv-conf=${RESOLV_CONF}"
+EXTRA_CONFIG=""#"${EXTRA_CONFIG} --extra-config=kubelet.resolv-conf=${RESOLV_CONF}"
 
 #extra Rook configuration
 ROOK_BLOCK_POOL_NAME=${ROOK_BLOCK_POOL_NAME:-"newrbdpool"}
-
-# enable read-only anonymous access to kubelet metrics
-EXTRA_CONFIG="${EXTRA_CONFIG} --extra-config=kubelet.read-only-port=10255"
 
 if [[ "${KUBE_VERSION}" == "latest" ]]; then
     # update the version string from latest with the real version
@@ -204,30 +188,20 @@ kubectl="$(detect_kubectl)"
 case "${1:-}" in
 up)
     install_minikube
+    install_kubectl
     #if driver  is 'none' install kubectl with KUBE_VERSION
     if [[ "${VM_DRIVER}" == "none" ]]; then
         mkdir -p "$HOME"/.kube "$HOME"/.minikube
         install_kubectl
     fi
 
+    # disable_storage_addons
     disable_storage_addons
-
+    sudo systemctl restart libvirtd.service
     echo "starting minikube with kubeadm bootstrapper"
-    if minikube_supports_psp; then
-        enable_psp
-        # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG} ${EXTRA_CONFIG_PSP} --wait-timeout="${MINIKUBE_WAIT_TIMEOUT}" --wait="${MINIKUBE_WAIT}" --delete-on-failure
-    else
-        # This is a workaround to fix psp issues in minikube >1.6.2 and <1.11.0
-        # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG} --wait-timeout="${MINIKUBE_WAIT_TIMEOUT}" --wait="${MINIKUBE_WAIT}" --delete-on-failure
-        DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-        ${minikube} kubectl -- apply -f "$DIR"/psp.yaml
-        ${minikube} stop
-        # shellcheck disable=SC2086
-        ${minikube} start --force --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" ${EXTRA_CONFIG} ${EXTRA_CONFIG_PSP} --wait-timeout="${MINIKUBE_WAIT_TIMEOUT}" --wait="${MINIKUBE_WAIT}"
-    fi
-
+    ${minikube} start --disk-size='40000mb' --force --network="${NETWORK}" --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" --delete-on-failure=true --profile "${PROF}" ${EXTRA_CONFIG}
+    ${minikube} profile "${PROF}"
+    ${kubectl} config use-context "${PROF}"
     # create a link so the default dataDirHostPath will work for this
     # environment
     if [[ "${VM_DRIVER}" != "none" ]]; then
@@ -235,7 +209,22 @@ up)
         # shellcheck disable=SC2086
         ${minikube} ssh "sudo mkdir -p /mnt/${DISK}/var/lib/rook;sudo ln -s /mnt/${DISK}/var/lib/rook /var/lib/rook"
     fi
+
+    sudo -S qemu-img create -f raw "/var/lib/libvirt/images/minikube-box2-vm-disk1-30G-${PROF}" 30G
+
+    sudo virsh -c qemu:///system attach-disk "${PROF}" --source "/var/lib/libvirt/images/minikube-box2-vm-disk1-30G-${PROF}" --target vdb --cache none
+
+    sudo virsh -c qemu:///system reboot --domain "${PROF}"
+
+    ${minikube} start --disk-size='40000mb' --force --network="${NETWORK}" --memory="${MEMORY}" --cpus="${CPUS}" -b kubeadm --kubernetes-version="${KUBE_VERSION}" --driver="${VM_DRIVER}" --feature-gates="${K8S_FEATURE_GATES}" --cni="${CNI}" --delete-on-failure=true ${EXTRA_CONFIG}
+
     ${minikube} kubectl -- cluster-info
+    echo "deploy rook"
+    DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    "$DIR"/rook.sh deploy
+    echo "install snapshot controller"
+    DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    "$DIR"/install-snapshot.sh install
     ;;
 down)
     ${minikube} stop
@@ -284,14 +273,41 @@ cephcsi)
     ;;
 k8s-sidecar)
     echo "copying the kubernetes sidecar images"
-    copy_image_to_cluster "${K8S_IMAGE_REPO}/csi-attacher:${CSI_ATTACHER_VERSION}" "${K8S_IMAGE_REPO}/csi-attacher:${CSI_ATTACHER_VERSION}"
-    copy_image_to_cluster "${K8S_IMAGE_REPO}/csi-snapshotter:${CSI_SNAPSHOTTER_VERSION}" "${K8S_IMAGE_REPO}/csi-snapshotter:${CSI_SNAPSHOTTER_VERSION}"
-    copy_image_to_cluster "${K8S_IMAGE_REPO}/csi-provisioner:${CSI_PROVISIONER_VERSION}" "${K8S_IMAGE_REPO}/csi-provisioner:${CSI_PROVISIONER_VERSION}"
-    copy_image_to_cluster "${K8S_IMAGE_REPO}/csi-node-driver-registrar:${CSI_NODE_DRIVER_REGISTRAR_VERSION}" "${K8S_IMAGE_REPO}/csi-node-driver-registrar:${CSI_NODE_DRIVER_REGISTRAR_VERSION}"
-    copy_image_to_cluster "${K8S_IMAGE_REPO}/csi-resizer:${CSI_RESIZER_VERSION}" "${K8S_IMAGE_REPO}/csi-resizer:${CSI_RESIZER_VERSION}"
+    copy_image_to_cluster "${K8S_IMAGE_REPO}"/csi-attacher:v3.0.2 "${K8S_IMAGE_REPO}"/csi-attacher:v3.0.2
+    copy_image_to_cluster "${K8S_IMAGE_REPO}"/csi-snapshotter:v3.0.2 $"${K8S_IMAGE_REPO}"/csi-snapshotter:v3.0.2
+    copy_image_to_cluster "${K8S_IMAGE_REPO}"/csi-provisioner:v2.0.4 "${K8S_IMAGE_REPO}"/csi-provisioner:v2.0.4
+    copy_image_to_cluster "${K8S_IMAGE_REPO}"/csi-node-driver-registrar:v2.0.1 "${K8S_IMAGE_REPO}"/csi-node-driver-registrar:v2.0.1
+    copy_image_to_cluster "${K8S_IMAGE_REPO}"/csi-resizer:v1.0.1 "${K8S_IMAGE_REPO}"/csi-resizer:v1.0.1
     ;;
 clean)
     ${minikube} delete
+    ;;
+vault)
+    DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    "$DIR"/rook.sh vault
+    ;;
+vault-down)
+    DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    "$DIR"/rook.sh vault-down
+    ;;
+DR)
+    DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    cluster_1="$2"
+    cluster_2="$3"
+    
+    site_name="$(${kubectl} get cephblockpools.ceph.rook.io replicapool -nrook-ceph --context=${cluster_1} -o jsonpath='{.status.mirroringInfo.site_name}')"
+    site_token="$(${kubectl} get secret -n rook-ceph pool-peer-token-replicapool --context=${cluster_1} -o jsonpath='{.data.token}'|base64 -d)"
+    echo "${cluster_1} site_name:${site_name} site_token:${site_token}"
+    ${kubectl} -n rook-ceph create secret generic --context=${cluster_2} "${site_name}" --from-literal=token="${site_token}" --from-literal=pool=replicapool
+    
+    cat "$DIR"/../../mirror.yaml | sed "s|replacer|${site_name}|" | kubectl apply --context=${cluster_2} -f -
+
+    site_name="$(${kubectl} get cephblockpools.ceph.rook.io replicapool -nrook-ceph --context=${cluster_2} -o jsonpath='{.status.mirroringInfo.site_name}')"
+    site_token="$(${kubectl} get secret -n rook-ceph pool-peer-token-replicapool --context=${cluster_2} -o jsonpath='{.data.token}'|base64 -d)"
+    echo "${cluster_2} site_name:${site_name} site_token:${site_token}"
+    ${kubectl} -n rook-ceph create secret generic --context=${cluster_1} "${site_name}" --from-literal=token="${site_token}" --from-literal=pool=replicapool
+    
+    cat "$DIR"/../../mirror.yaml | sed "s|replacer|${site_name}|" | kubectl apply --context=${cluster_1} -f -
     ;;
 *)
     echo " $0 [command]

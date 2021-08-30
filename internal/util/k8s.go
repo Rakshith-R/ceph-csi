@@ -34,17 +34,17 @@ func NewK8sClient() *k8s.Clientset {
 	if cPath != "" {
 		cfg, err = clientcmd.BuildConfigFromFlags("", cPath)
 		if err != nil {
-			log.FatalLogMsg("Failed to get cluster config with error: %v\n", err)
+			log.ErrorLogMsg("Failed to get cluster config with error: %v\n", err)
 		}
 	} else {
 		cfg, err = rest.InClusterConfig()
 		if err != nil {
-			log.FatalLogMsg("Failed to get cluster config with error: %v\n", err)
+			log.ErrorLogMsg("Failed to get cluster config with error: %v\n", err)
 		}
 	}
 	client, err := k8s.NewForConfig(cfg)
 	if err != nil {
-		log.FatalLogMsg("Failed to create client with error: %v\n", err)
+		log.ErrorLogMsg("Failed to create client with error: %v\n", err)
 	}
 
 	return client

@@ -4,15 +4,93 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/errwrap"
+	"github.com/hashicorp/go-secure-stdlib/strutil"
 	sockaddr "github.com/hashicorp/go-sockaddr"
-	"github.com/hashicorp/vault/sdk/helper/strutil"
 	"github.com/mitchellh/mapstructure"
 )
+
+var validCapacityString = regexp.MustCompile("^[\t ]*([0-9]+)[\t ]?([kmgtKMGT][iI]?[bB])?[\t ]*$")
+
+// ParseCapacityString parses a capacity string and returns the number of bytes it represents.
+// Capacity strings are things like 5gib or 10MB. Supported prefixes are kb, kib, mb, mib, gb,
+// gib, tb, tib, which are not case sensitive. If no prefix is present, the number is assumed
+// to be in bytes already.
+func ParseCapacityString(in interface{}) (uint64, error) {
+	var cap uint64
+
+	jsonIn, ok := in.(json.Number)
+	if ok {
+		in = jsonIn.String()
+	}
+
+	switch inp := in.(type) {
+	case nil:
+		// return default of zero
+	case string:
+		if inp == "" {
+			return cap, nil
+		}
+
+		matches := validCapacityString.FindStringSubmatch(inp)
+
+		// no sub-groups means we couldn't parse it
+		if len(matches) <= 1 {
+			return cap, errors.New("could not parse capacity from input")
+		}
+
+		var multiplier uint64 = 1
+		switch strings.ToLower(matches[2]) {
+		case "kb":
+			multiplier = 1000
+		case "kib":
+			multiplier = 1024
+		case "mb":
+			multiplier = 1000 * 1000
+		case "mib":
+			multiplier = 1024 * 1024
+		case "gb":
+			multiplier = 1000 * 1000 * 1000
+		case "gib":
+			multiplier = 1024 * 1024 * 1024
+		case "tb":
+			multiplier = 1000 * 1000 * 1000 * 1000
+		case "tib":
+			multiplier = 1024 * 1024 * 1024 * 1024
+		}
+
+		size, err := strconv.ParseUint(matches[1], 10, 64)
+		if err != nil {
+			return cap, err
+		}
+
+		cap = size * multiplier
+	case int:
+		cap = uint64(inp)
+	case int32:
+		cap = uint64(inp)
+	case int64:
+		cap = uint64(inp)
+	case uint:
+		cap = uint64(inp)
+	case uint32:
+		cap = uint64(inp)
+	case uint64:
+		cap = uint64(inp)
+	case float32:
+		cap = uint64(inp)
+	case float64:
+		cap = uint64(inp)
+	default:
+		return cap, errors.New("could not parse capacity from input")
+	}
+
+	return cap, nil
+}
 
 func ParseDurationSecond(in interface{}) (time.Duration, error) {
 	var dur time.Duration
@@ -219,7 +297,7 @@ func ParseAddrs(addrs interface{}) ([]*sockaddr.SockAddrMarshaler, error) {
 	for _, addr := range stringAddrs {
 		sa, err := sockaddr.NewSockAddr(addr)
 		if err != nil {
-			return nil, errwrap.Wrapf(fmt.Sprintf("error parsing address %q: {{err}}", addr), err)
+			return nil, fmt.Errorf("error parsing address %q: %w", addr, err)
 		}
 		out = append(out, &sockaddr.SockAddrMarshaler{
 			SockAddr: sa,

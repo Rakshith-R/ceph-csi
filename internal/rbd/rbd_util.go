@@ -58,9 +58,8 @@ const (
 	// Output strings returned during invocation of "ceph rbd task add remove <imagespec>" when
 	// command is not supported by ceph manager. Used to check errors and recover when the command
 	// is unsupported.
-	rbdTaskRemoveCmdInvalidString1      = "no valid command found"
-	rbdTaskRemoveCmdInvalidString2      = "Error EINVAL: invalid command"
-	rbdTaskRemoveCmdAccessDeniedMessage = "Error EACCES:"
+	rbdTaskRemoveCmdInvalidString       = "No handler found"
+	rbdTaskRemoveCmdAccessDeniedMessage = "access denied:"
 
 	// image metadata key for thick-provisioning.
 	// As image metadata key starting with '.rbd' will not be copied when we do
@@ -533,8 +532,7 @@ func addRbdManagerTask(ctx context.Context, pOpts *rbdVolume, arg []string) (boo
 	_, stderr, err := util.ExecCommand(ctx, "ceph", args...)
 	if err != nil {
 		switch {
-		case strings.Contains(stderr, rbdTaskRemoveCmdInvalidString1) &&
-			strings.Contains(stderr, rbdTaskRemoveCmdInvalidString2):
+		case strings.Contains(stderr, rbdTaskRemoveCmdInvalidString):
 			log.WarningLog(
 				ctx,
 				"cluster with cluster ID (%s) does not support Ceph manager based rbd commands"+
@@ -553,6 +551,27 @@ func addRbdManagerTask(ctx context.Context, pOpts *rbdVolume, arg []string) (boo
 	}
 
 	return supported, err
+}
+
+func isCephMgrSupported(ctx context.Context, clusterID string, err error) bool {
+	switch {
+	case err == nil:
+		return true
+	case strings.Contains(err.Error(), rbdTaskRemoveCmdInvalidString):
+		log.WarningLog(
+			ctx,
+			"cluster with cluster ID (%s) does not support Ceph manager based rbd commands"+
+				"(minimum ceph version required is v14.2.3)",
+			clusterID)
+
+		return false
+	case strings.Contains(err.Error(), rbdTaskRemoveCmdAccessDeniedMessage):
+		log.WarningLog(ctx, "access denied to Ceph MGR-based rbd commands on cluster ID (%s)", clusterID)
+
+		return false
+	}
+
+	return true
 }
 
 // getTrashPath returns the image path for trash operation.
@@ -624,15 +643,14 @@ func deleteImage(ctx context.Context, pOpts *rbdVolume, cr *util.Credentials) er
 // otherwise removes the image from trash.
 func trashRemoveImage(ctx context.Context, pOpts *rbdVolume, cr *util.Credentials) error {
 	// attempt to use Ceph manager based deletion support if available
-
-	args := []string{
-		"trash", "remove",
-		pOpts.getTrashPath(),
-		"--id", cr.ID,
-		"--keyfile=" + cr.KeyFile,
-		"-m", pOpts.Monitors,
+	ra, err := pOpts.conn.GetRBDAdmin()
+	if err != nil {
+		return err
 	}
-	rbdCephMgrSupported, err := addRbdManagerTask(ctx, pOpts, args)
+
+	ta := ra.Task()
+	_, err = ta.AddTrashRemove(admin.NewImageSpec(pOpts.Pool, pOpts.RadosNamespace, pOpts.ImageID))
+	rbdCephMgrSupported := isCephMgrSupported(ctx, pOpts.ClusterID, err)
 	if rbdCephMgrSupported && err != nil {
 		log.ErrorLog(ctx, "failed to add task to delete rbd image: %s, %v", pOpts, err)
 
@@ -771,9 +789,18 @@ func (rv *rbdVolume) flattenRbdImage(
 	if !forceFlatten && (depth < hardlimit) && (depth < softlimit) {
 		return nil
 	}
-	args := []string{"flatten", rv.String(), "--id", cr.ID, "--keyfile=" + cr.KeyFile, "-m", rv.Monitors}
-	supported, err := addRbdManagerTask(ctx, rv, args)
-	if supported {
+
+	// attempt to use Ceph manager based deletion support if available
+	ra, err := rv.conn.GetRBDAdmin()
+	if err != nil {
+		return err
+	}
+
+	ta := ra.Task()
+	_, err = ta.AddFlatten(admin.NewImageSpec(rv.Pool, rv.RadosNamespace, rv.RbdImageName))
+	log.ErrorLog(ctx, "Mine: %v", err)
+	rbdCephMgrSupported := isCephMgrSupported(ctx, rv.ClusterID, err)
+	if rbdCephMgrSupported {
 		if err != nil {
 			// discard flattening error if the image does not have any parent
 			rbdFlattenNoParent := fmt.Sprintf("Image %s/%s does not have a parent", rv.Pool, rv.RbdImageName)
@@ -788,7 +815,7 @@ func (rv *rbdVolume) flattenRbdImage(
 			return fmt.Errorf("%w: flatten is in progress for image %s", ErrFlattenInProgress, rv.RbdImageName)
 		}
 	}
-	if !supported {
+	if !rbdCephMgrSupported {
 		log.ErrorLog(
 			ctx,
 			"task manager does not support flatten,image will be flattened once hardlimit is reached: %v",

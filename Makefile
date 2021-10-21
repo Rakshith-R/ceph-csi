@@ -59,7 +59,7 @@ ifndef CEPH_VERSION
 endif
 ifdef CEPH_VERSION
 	# pass -tags to go commands (for go-ceph build constraints)
-	GO_TAGS = -tags=$(CEPH_VERSION)
+	GO_TAGS = -tags=$(CEPH_VERSION),ceph_preview
 endif
 
 # passing TARGET=static-check on the 'make containerized-test' or 'make

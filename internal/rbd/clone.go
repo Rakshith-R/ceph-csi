@@ -58,7 +58,7 @@ func (rv *rbdVolume) checkCloneImage(ctx context.Context, parentVol *rbdVolume) 
 		case errors.Is(err, ErrSnapNotFound):
 			// check temporary image needs flatten, if yes add task to flatten the
 			// temporary clone
-			err = tempClone.flattenRbdImage(ctx, rv.conn.Creds, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
+			err = tempClone.flattenRbdImage(ctx, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 			if err != nil {
 				return false, err
 			}
@@ -69,7 +69,7 @@ func (rv *rbdVolume) checkCloneImage(ctx context.Context, parentVol *rbdVolume) 
 				return false, err
 			}
 			// check image needs flatten, if yes add task to flatten the clone
-			err = rv.flattenRbdImage(ctx, rv.conn.Creds, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
+			err = rv.flattenRbdImage(ctx, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 			if err != nil {
 				return false, err
 			}
@@ -115,7 +115,7 @@ func (rv *rbdVolume) checkCloneImage(ctx context.Context, parentVol *rbdVolume) 
 		return false, err
 	}
 	// check image needs flatten, if yes add task to flatten the clone
-	err = rv.flattenRbdImage(ctx, rv.conn.Creds, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
+	err = rv.flattenRbdImage(ctx, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 	if err != nil {
 		return false, err
 	}
@@ -235,7 +235,7 @@ func (rv *rbdVolume) doSnapClone(ctx context.Context, parentVol *rbdVolume) erro
 		}
 	} else {
 		// flatten clone
-		errFlatten = tempClone.flattenRbdImage(ctx, rv.conn.Creds, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
+		errFlatten = tempClone.flattenRbdImage(ctx, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
 		if errFlatten != nil {
 			return errFlatten
 		}
@@ -280,11 +280,11 @@ func (rv *rbdVolume) flattenCloneImage(ctx context.Context) error {
 	}
 	err := tempClone.getImageInfo()
 	if err == nil {
-		return tempClone.flattenRbdImage(ctx, tempClone.conn.Creds, false, hardLimit, softLimit)
+		return tempClone.flattenRbdImage(ctx, false, hardLimit, softLimit)
 	}
 	if !errors.Is(err, ErrImageNotFound) {
 		return err
 	}
 
-	return rv.flattenRbdImage(ctx, rv.conn.Creds, false, hardLimit, softLimit)
+	return rv.flattenRbdImage(ctx, false, hardLimit, softLimit)
 }

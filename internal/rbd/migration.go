@@ -105,7 +105,7 @@ func parseAndDeleteMigratedVolume(ctx context.Context, volumeID string, cr *util
 	}
 	defer rv.Destroy()
 	// if connected , delete it
-	err = deleteImage(ctx, rv, cr)
+	err = rv.deleteImage(ctx)
 	if err != nil {
 		log.ErrorLog(ctx, "failed to delete rbd image : %s, err: %v", rv.RbdImageName, err)
 

@@ -3,17 +3,17 @@ module github.com/ceph/ceph-csi
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.41.5
+	github.com/aws/aws-sdk-go v1.42.0
 	github.com/ceph/ceph-csi/api v0.0.0-00010101000000-000000000000
 	github.com/ceph/go-ceph v0.12.0
 	github.com/container-storage-interface/spec v1.5.0
 	github.com/csi-addons/replication-lib-utils v0.2.0
 	github.com/csi-addons/spec v0.1.1
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hashicorp/vault/api v1.1.1
+	github.com/hashicorp/vault/api v1.3.0
 	github.com/kubernetes-csi/csi-lib-utils v0.10.0
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	github.com/libopenstorage/secrets v0.0.0-20210908194121-a1d19aa9713a
@@ -22,7 +22,7 @@ require (
 	github.com/pborman/uuid v1.2.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2
 	google.golang.org/grpc v1.41.0
 	k8s.io/api v0.22.2
@@ -40,7 +40,6 @@ replace (
 	code.cloudfoundry.org/gofileutils => github.com/cloudfoundry/gofileutils v0.0.0-20170111115228-4d0c80011a0f
 	github.com/ceph/ceph-csi/api => ./api
 	github.com/golang/protobuf => github.com/golang/protobuf v1.4.3
-	github.com/hashicorp/vault/sdk => github.com/hashicorp/vault/sdk v0.1.14-0.20201116234512-b4d4137dfe8b
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v0.20.4-openstorage-rc3
 	gomodules.xyz/jsonpatch/v2 => github.com/gomodules/jsonpatch/v2 v2.2.0
 	//
@@ -73,5 +72,10 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.22.2
 )
 
-// This tag doesn't exist, but is imported by github.com/portworx/sched-ops.
-exclude github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
+exclude (
+	// missing tag, referred to by github.com/hashicorp/go-kms-wrapping@v0.5.1
+	github.com/hashicorp/vault/sdk v0.1.14-0.20191229212425-c478d00be0d6
+
+	// This tag doesn't exist, but is imported by github.com/portworx/sched-ops.
+	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
+)

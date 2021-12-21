@@ -1,0 +1,290 @@
+I1130 04:31:40.607641    7055 cephcsi.go:168] Driver version: canary and Git version: 5fcfb06ba4aa208a83409979abb5be73463f795c
+I1130 04:31:40.607813    7055 cephcsi.go:186] Initial PID limit is set to 14251
+I1130 04:31:40.607848    7055 cephcsi.go:192] Reconfigured PID limit to -1 (max)
+I1130 04:31:40.608214    7055 cephcsi.go:217] Starting driver type: rbd with name: rook-ceph.rbd.csi.ceph.com
+I1130 04:31:40.613974    7055 mount_linux.go:207] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:31:40.613984    7055 mount_linux.go:208] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+, failed with: exit status 1
+I1130 04:31:40.614216    7055 server.go:131] Listening for connections on address: &net.UnixAddr{Name:"//csi/csi.sock", Net:"unix"}
+I1130 04:31:41.346261    7055 utils.go:177] ID: 1 GRPC call: /csi.v1.Identity/GetPluginInfo
+I1130 04:31:41.347689    7055 utils.go:181] ID: 1 GRPC request: {}
+I1130 04:31:41.347724    7055 identityserver-default.go:38] ID: 1 Using default GetPluginInfo
+I1130 04:31:41.347800    7055 utils.go:188] ID: 1 GRPC response: {"name":"rook-ceph.rbd.csi.ceph.com","vendor_version":"canary"}
+I1130 04:31:41.903710    7055 utils.go:177] ID: 2 GRPC call: /csi.v1.Node/NodeGetInfo
+I1130 04:31:41.903790    7055 utils.go:181] ID: 2 GRPC request: {}
+I1130 04:31:41.903802    7055 nodeserver-default.go:60] ID: 2 Using default NodeGetInfo
+I1130 04:31:41.903979    7055 utils.go:188] ID: 2 GRPC response: {"accessible_topology":{},"node_id":"m1"}
+I1130 04:32:40.834074    7055 utils.go:177] ID: 3 GRPC call: /csi.v1.Identity/Probe
+I1130 04:32:40.834249    7055 utils.go:181] ID: 3 GRPC request: {}
+I1130 04:32:40.834603    7055 utils.go:188] ID: 3 GRPC response: {}
+I1130 04:33:40.832327    7055 utils.go:177] ID: 4 GRPC call: /csi.v1.Identity/Probe
+I1130 04:33:40.832407    7055 utils.go:181] ID: 4 GRPC request: {}
+I1130 04:33:40.832502    7055 utils.go:188] ID: 4 GRPC response: {}
+I1130 04:34:40.832001    7055 utils.go:177] ID: 5 GRPC call: /csi.v1.Identity/Probe
+I1130 04:34:40.832038    7055 utils.go:181] ID: 5 GRPC request: {}
+I1130 04:34:40.832051    7055 utils.go:188] ID: 5 GRPC response: {}
+I1130 04:35:40.832824    7055 utils.go:177] ID: 6 GRPC call: /csi.v1.Identity/Probe
+I1130 04:35:40.832947    7055 utils.go:181] ID: 6 GRPC request: {}
+I1130 04:35:40.833013    7055 utils.go:188] ID: 6 GRPC response: {}
+I1130 04:36:40.832777    7055 utils.go:177] ID: 7 GRPC call: /csi.v1.Identity/Probe
+I1130 04:36:40.832899    7055 utils.go:181] ID: 7 GRPC request: {}
+I1130 04:36:40.833018    7055 utils.go:188] ID: 7 GRPC response: {}
+I1130 04:37:40.831699    7055 utils.go:177] ID: 8 GRPC call: /csi.v1.Identity/Probe
+I1130 04:37:40.831739    7055 utils.go:181] ID: 8 GRPC request: {}
+I1130 04:37:40.831751    7055 utils.go:188] ID: 8 GRPC response: {}
+I1130 04:38:31.524542    7055 utils.go:177] ID: 9 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:38:31.525241    7055 utils.go:181] ID: 9 GRPC request: {}
+I1130 04:38:31.526249    7055 utils.go:188] ID: 9 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:38:31.541560    7055 utils.go:177] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC call: /csi.v1.Node/NodeStageVolume
+I1130 04:38:31.542676    7055 utils.go:181] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC request: {"secrets":"***stripped***","staging_target_path":"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount","volume_capability":{"AccessType":{"Mount":{"fs_type":"ext4"}},"access_mode":{"mode":1}},"volume_context":{"clusterID":"rook-ceph","csi.storage.k8s.io/pv/name":"pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb","csi.storage.k8s.io/pvc/name":"rbd-pvc","csi.storage.k8s.io/pvc/namespace":"rook-ceph","imageFeatures":"layering","imageFormat":"2","imageName":"csi-vol-539034ea-5197-11ec-98a5-0242ac110005","journalPool":"replicapool","pool":"replicapool","storage.kubernetes.io/csiProvisionerIdentity":"1638246703311-8081-rook-ceph.rbd.csi.ceph.com"},"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005"}
+I1130 04:38:31.543899    7055 rbd_util.go:1219] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 setting disableInUseChecks: false image features: [layering] mounter: rbd
+I1130 04:38:31.575396    7055 omap.go:87] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 got omap values: (pool="replicapool", namespace="", name="csi.volume.539034ea-5197-11ec-98a5-0242ac110005"): map[csi.imageid:113d9262b1c9 csi.imagename:csi-vol-539034ea-5197-11ec-98a5-0242ac110005 csi.volname:pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb csi.volume.owner:rook-ceph]
+E1130 04:38:31.575654    7055 util.go:247] kernel 4.19.202 does not support required features
+I1130 04:38:31.636577    7055 cephcmds.go:62] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 command succeeded: rbd [device list --format=json --device-type krbd]
+I1130 04:38:31.654925    7055 rbd_attach.go:330] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 rbd: map mon 192.168.61.206:6789
+I1130 04:38:31.767718    7055 cephcmds.go:62] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 command succeeded: rbd [--id csi-rbd-node -m 192.168.61.206:6789 --keyfile=***stripped*** map replicapool/csi-vol-539034ea-5197-11ec-98a5-0242ac110005 --device-type krbd --options noudev]
+I1130 04:38:31.767794    7055 nodeserver.go:389] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 rbd image: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005/replicapool was successfully mapped at /dev/rbd0
+I1130 04:38:31.767886    7055 mount_linux.go:463] Attempting to determine if disk "/dev/rbd0" is formatted using blkid with args: ([-p -s TYPE -s PTTYPE -o export /dev/rbd0])
+I1130 04:38:31.773527    7055 mount_linux.go:466] Output: ""
+I1130 04:38:31.827336    7055 mount_linux.go:463] Attempting to determine if disk "/dev/rbd0" is formatted using blkid with args: ([-p -s TYPE -s PTTYPE -o export /dev/rbd0])
+I1130 04:38:31.832413    7055 mount_linux.go:466] Output: "DEVNAME=/dev/rbd0\nTYPE=ext4\n"
+I1130 04:38:31.832456    7055 mount_linux.go:357] Checking for issues with fsck on disk: /dev/rbd0
+I1130 04:38:31.852350    7055 mount_linux.go:453] Attempting to mount disk /dev/rbd0 in ext4 format at /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005
+I1130 04:38:31.852428    7055 mount_linux.go:180] Mounting cmd (mount) with arguments (-t ext4 -o _netdev,defaults /dev/rbd0 /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005)
+I1130 04:38:31.861015    7055 nodeserver.go:343] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 rbd: successfully mounted volume 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 to stagingTargetPath /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005
+I1130 04:38:31.861084    7055 utils.go:188] ID: 10 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC response: {}
+I1130 04:38:31.869279    7055 utils.go:177] ID: 11 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:38:31.869415    7055 utils.go:181] ID: 11 GRPC request: {}
+I1130 04:38:31.869550    7055 utils.go:188] ID: 11 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:38:31.871646    7055 utils.go:177] ID: 12 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC call: /csi.v1.Node/NodePublishVolume
+I1130 04:38:31.871843    7055 utils.go:181] ID: 12 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC request: {"staging_target_path":"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount","target_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount","volume_capability":{"AccessType":{"Mount":{"fs_type":"ext4"}},"access_mode":{"mode":1}},"volume_context":{"clusterID":"rook-ceph","csi.storage.k8s.io/pv/name":"pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb","csi.storage.k8s.io/pvc/name":"rbd-pvc","csi.storage.k8s.io/pvc/namespace":"rook-ceph","imageFeatures":"layering","imageFormat":"2","imageName":"csi-vol-539034ea-5197-11ec-98a5-0242ac110005","journalPool":"replicapool","pool":"replicapool","storage.kubernetes.io/csiProvisionerIdentity":"1638246703311-8081-rook-ceph.rbd.csi.ceph.com"},"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005"}
+I1130 04:38:31.871964    7055 nodeserver.go:708] ID: 12 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 target /var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount
+isBlock false
+fstype ext4
+stagingPath /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005
+readonly false
+mountflags [bind _netdev]
+I1130 04:38:31.876365    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:38:31.876398    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:38:31.876424    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:38:31.876472    7055 mount_linux.go:146] Mounting cmd (mount) with arguments (-t ext4 -o bind,_netdev /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 /var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount)
+I1130 04:38:31.878094    7055 mount_linux.go:146] Mounting cmd (mount) with arguments (-t ext4 -o bind,remount,_netdev /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 /var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount)
+I1130 04:38:31.879258    7055 nodeserver.go:607] ID: 12 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 rbd: successfully mounted stagingPath /var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/globalmount/0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 to targetPath /var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount
+I1130 04:38:31.879340    7055 utils.go:188] ID: 12 Req-ID: 0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005 GRPC response: {}
+I1130 04:38:32.727634    7055 utils.go:177] ID: 13 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:38:32.727955    7055 utils.go:181] ID: 13 GRPC request: {}
+I1130 04:38:32.728295    7055 utils.go:188] ID: 13 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:38:32.731520    7055 utils.go:177] ID: 14 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:38:32.731820    7055 utils.go:181] ID: 14 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:38:32.748383    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:38:32.748420    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:38:32.748435    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:38:32.748880    7055 utils.go:188] ID: 14 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:38:40.832021    7055 utils.go:177] ID: 15 GRPC call: /csi.v1.Identity/Probe
+I1130 04:38:40.832060    7055 utils.go:181] ID: 15 GRPC request: {}
+I1130 04:38:40.832094    7055 utils.go:188] ID: 15 GRPC response: {}
+I1130 04:39:40.831837    7055 utils.go:177] ID: 16 GRPC call: /csi.v1.Identity/Probe
+I1130 04:39:40.831961    7055 utils.go:181] ID: 16 GRPC request: {}
+I1130 04:39:40.832015    7055 utils.go:188] ID: 16 GRPC response: {}
+I1130 04:39:51.565642    7055 utils.go:177] ID: 17 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:39:51.565757    7055 utils.go:181] ID: 17 GRPC request: {}
+I1130 04:39:51.565939    7055 utils.go:188] ID: 17 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:39:51.567744    7055 utils.go:177] ID: 18 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:39:51.567918    7055 utils.go:181] ID: 18 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:39:51.583698    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:39:51.583758    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:39:51.583779    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:39:51.584012    7055 utils.go:188] ID: 18 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:40:40.834381    7055 utils.go:177] ID: 19 GRPC call: /csi.v1.Identity/Probe
+I1130 04:40:40.834442    7055 utils.go:181] ID: 19 GRPC request: {}
+I1130 04:40:40.834483    7055 utils.go:188] ID: 19 GRPC response: {}
+I1130 04:41:21.530111    7055 utils.go:177] ID: 20 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:41:21.530232    7055 utils.go:181] ID: 20 GRPC request: {}
+I1130 04:41:21.530426    7055 utils.go:188] ID: 20 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:41:21.534402    7055 utils.go:177] ID: 21 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:41:21.534569    7055 utils.go:181] ID: 21 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:41:21.551054    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:41:21.551108    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:41:21.551130    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:41:21.551360    7055 utils.go:188] ID: 21 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:41:40.832187    7055 utils.go:177] ID: 22 GRPC call: /csi.v1.Identity/Probe
+I1130 04:41:40.832289    7055 utils.go:181] ID: 22 GRPC request: {}
+I1130 04:41:40.832357    7055 utils.go:188] ID: 22 GRPC response: {}
+I1130 04:42:40.832860    7055 utils.go:177] ID: 23 GRPC call: /csi.v1.Identity/Probe
+I1130 04:42:40.833008    7055 utils.go:181] ID: 23 GRPC request: {}
+I1130 04:42:40.833050    7055 utils.go:188] ID: 23 GRPC response: {}
+I1130 04:43:00.572425    7055 utils.go:177] ID: 24 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:43:00.572850    7055 utils.go:181] ID: 24 GRPC request: {}
+I1130 04:43:00.573256    7055 utils.go:188] ID: 24 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:43:00.576099    7055 utils.go:177] ID: 25 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:43:00.576405    7055 utils.go:181] ID: 25 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:43:00.592812    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:43:00.593086    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:43:00.593302    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:43:00.593815    7055 utils.go:188] ID: 25 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:43:40.831823    7055 utils.go:177] ID: 26 GRPC call: /csi.v1.Identity/Probe
+I1130 04:43:40.831956    7055 utils.go:181] ID: 26 GRPC request: {}
+I1130 04:43:40.832000    7055 utils.go:188] ID: 26 GRPC response: {}
+I1130 04:44:21.466655    7055 utils.go:177] ID: 27 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:44:21.466887    7055 utils.go:181] ID: 27 GRPC request: {}
+I1130 04:44:21.467140    7055 utils.go:188] ID: 27 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:44:21.469087    7055 utils.go:177] ID: 28 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:44:21.469425    7055 utils.go:181] ID: 28 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:44:21.486982    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:44:21.487070    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:44:21.487091    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:44:21.487677    7055 utils.go:188] ID: 28 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:44:40.832559    7055 utils.go:177] ID: 29 GRPC call: /csi.v1.Identity/Probe
+I1130 04:44:40.832936    7055 utils.go:181] ID: 29 GRPC request: {}
+I1130 04:44:40.833340    7055 utils.go:188] ID: 29 GRPC response: {}
+I1130 04:45:40.832231    7055 utils.go:177] ID: 30 GRPC call: /csi.v1.Identity/Probe
+I1130 04:45:40.832349    7055 utils.go:181] ID: 30 GRPC request: {}
+I1130 04:45:40.832390    7055 utils.go:188] ID: 30 GRPC response: {}
+I1130 04:45:52.858256    7055 utils.go:177] ID: 31 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:45:52.858312    7055 utils.go:181] ID: 31 GRPC request: {}
+I1130 04:45:52.858404    7055 utils.go:188] ID: 31 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:45:52.859173    7055 utils.go:177] ID: 32 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:45:52.859362    7055 utils.go:181] ID: 32 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:45:52.864570    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:45:52.864585    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:45:52.864593    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:45:52.864797    7055 utils.go:188] ID: 32 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:46:40.832376    7055 utils.go:177] ID: 33 GRPC call: /csi.v1.Identity/Probe
+I1130 04:46:40.832408    7055 utils.go:181] ID: 33 GRPC request: {}
+I1130 04:46:40.832420    7055 utils.go:188] ID: 33 GRPC response: {}
+I1130 04:47:17.569833    7055 utils.go:177] ID: 34 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:47:17.570159    7055 utils.go:181] ID: 34 GRPC request: {}
+I1130 04:47:17.570518    7055 utils.go:188] ID: 34 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:47:17.575233    7055 utils.go:177] ID: 35 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:47:17.575351    7055 utils.go:181] ID: 35 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:47:17.585157    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:47:17.585182    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:47:17.585190    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:47:17.585327    7055 utils.go:188] ID: 35 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:47:40.832088    7055 utils.go:177] ID: 36 GRPC call: /csi.v1.Identity/Probe
+I1130 04:47:40.832418    7055 utils.go:181] ID: 36 GRPC request: {}
+I1130 04:47:40.832680    7055 utils.go:188] ID: 36 GRPC response: {}
+I1130 04:48:40.832872    7055 utils.go:177] ID: 37 GRPC call: /csi.v1.Identity/Probe
+I1130 04:48:40.833033    7055 utils.go:181] ID: 37 GRPC request: {}
+I1130 04:48:40.833093    7055 utils.go:188] ID: 37 GRPC response: {}
+I1130 04:48:47.995448    7055 utils.go:177] ID: 38 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:48:47.995603    7055 utils.go:181] ID: 38 GRPC request: {}
+I1130 04:48:47.996767    7055 utils.go:188] ID: 38 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:48:47.999870    7055 utils.go:177] ID: 39 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:48:48.000111    7055 utils.go:181] ID: 39 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:48:48.015038    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:48:48.015132    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:48:48.015186    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:48:48.015389    7055 utils.go:188] ID: 39 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:49:40.832866    7055 utils.go:177] ID: 40 GRPC call: /csi.v1.Identity/Probe
+I1130 04:49:40.833425    7055 utils.go:181] ID: 40 GRPC request: {}
+I1130 04:49:40.833523    7055 utils.go:188] ID: 40 GRPC response: {}
+I1130 04:50:10.370573    7055 utils.go:177] ID: 41 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:50:10.370795    7055 utils.go:181] ID: 41 GRPC request: {}
+I1130 04:50:10.370980    7055 utils.go:188] ID: 41 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:50:10.373442    7055 utils.go:177] ID: 42 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:50:10.373730    7055 utils.go:181] ID: 42 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:50:10.389264    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:50:10.389316    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:50:10.389334    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:50:10.389544    7055 utils.go:188] ID: 42 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:50:40.831749    7055 utils.go:177] ID: 43 GRPC call: /csi.v1.Identity/Probe
+I1130 04:50:40.831809    7055 utils.go:181] ID: 43 GRPC request: {}
+I1130 04:50:40.831825    7055 utils.go:188] ID: 43 GRPC response: {}
+I1130 04:51:15.473519    7055 utils.go:177] ID: 44 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:51:15.473685    7055 utils.go:181] ID: 44 GRPC request: {}
+I1130 04:51:15.473911    7055 utils.go:188] ID: 44 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:51:15.475249    7055 utils.go:177] ID: 45 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:51:15.475344    7055 utils.go:181] ID: 45 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:51:15.484540    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:51:15.484571    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:51:15.484581    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:51:15.484712    7055 utils.go:188] ID: 45 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:51:40.832170    7055 utils.go:177] ID: 46 GRPC call: /csi.v1.Identity/Probe
+I1130 04:51:40.832867    7055 utils.go:181] ID: 46 GRPC request: {}
+I1130 04:51:40.833137    7055 utils.go:188] ID: 46 GRPC response: {}
+I1130 04:52:31.118090    7055 utils.go:177] ID: 47 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:52:31.118209    7055 utils.go:181] ID: 47 GRPC request: {}
+I1130 04:52:31.118299    7055 utils.go:188] ID: 47 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:52:31.120106    7055 utils.go:177] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC call: /csi.v1.Node/NodeStageVolume
+I1130 04:52:31.120285    7055 utils.go:181] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC request: {"secrets":"***stripped***","staging_target_path":"/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01","volume_capability":{"AccessType":{"Block":{}},"access_mode":{"mode":1}},"volume_context":{"clusterID":"rook-ceph","csi.storage.k8s.io/pv/name":"pvc-7aba346e-76e5-4c30-a235-1c48269c9d01","csi.storage.k8s.io/pvc/name":"rbd-pvc1","csi.storage.k8s.io/pvc/namespace":"rook-ceph","imageFeatures":"layering","imageFormat":"2","imageName":"csi-vol-b2c0d5c7-5198-11ec-98a5-0242ac110005","journalPool":"replicapool","pool":"replicapool","storage.kubernetes.io/csiProvisionerIdentity":"1638246703311-8081-rook-ceph.rbd.csi.ceph.com"},"volume_id":"0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005"}
+I1130 04:52:31.120435    7055 rbd_util.go:1219] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 setting disableInUseChecks: false image features: [layering] mounter: rbd
+I1130 04:52:31.121511    7055 omap.go:87] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 got omap values: (pool="replicapool", namespace="", name="csi.volume.b2c0d5c7-5198-11ec-98a5-0242ac110005"): map[csi.imageid:113d39ad22e9 csi.imagename:csi-vol-b2c0d5c7-5198-11ec-98a5-0242ac110005 csi.volname:pvc-7aba346e-76e5-4c30-a235-1c48269c9d01 csi.volume.owner:rook-ceph]
+E1130 04:52:31.121651    7055 util.go:247] kernel 4.19.202 does not support required features
+I1130 04:52:31.178331    7055 cephcmds.go:62] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 command succeeded: rbd [device list --format=json --device-type krbd]
+I1130 04:52:31.196942    7055 rbd_attach.go:330] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 rbd: map mon 192.168.61.206:6789
+I1130 04:52:31.293243    7055 cephcmds.go:62] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 command succeeded: rbd [--id csi-rbd-node -m 192.168.61.206:6789 --keyfile=***stripped*** map replicapool/csi-vol-b2c0d5c7-5198-11ec-98a5-0242ac110005 --device-type krbd --options noudev]
+I1130 04:52:31.293263    7055 nodeserver.go:389] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 rbd image: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005/replicapool was successfully mapped at /dev/rbd1
+I1130 04:52:31.293308    7055 mount_linux.go:463] Attempting to determine if disk "/dev/rbd1" is formatted using blkid with args: ([-p -s TYPE -s PTTYPE -o export /dev/rbd1])
+I1130 04:52:31.297670    7055 mount_linux.go:466] Output: ""
+I1130 04:52:31.297687    7055 mount_linux.go:180] Mounting cmd (mount) with arguments ( -o bind,_netdev /dev/rbd1 /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005)
+I1130 04:52:31.299440    7055 mount_linux.go:180] Mounting cmd (mount) with arguments ( -o bind,remount,_netdev /dev/rbd1 /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005)
+I1130 04:52:31.302745    7055 nodeserver.go:343] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 rbd: successfully mounted volume 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 to stagingTargetPath /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005
+I1130 04:52:31.302784    7055 utils.go:188] ID: 48 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC response: {}
+I1130 04:52:31.309968    7055 utils.go:177] ID: 49 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC call: /csi.v1.Node/NodePublishVolume
+I1130 04:52:31.310072    7055 utils.go:181] ID: 49 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC request: {"staging_target_path":"/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01","target_path":"/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/efa4eb3a-2501-4d28-bf2e-471cd982a5f9","volume_capability":{"AccessType":{"Block":{}},"access_mode":{"mode":1}},"volume_context":{"clusterID":"rook-ceph","csi.storage.k8s.io/pv/name":"pvc-7aba346e-76e5-4c30-a235-1c48269c9d01","csi.storage.k8s.io/pvc/name":"rbd-pvc1","csi.storage.k8s.io/pvc/namespace":"rook-ceph","imageFeatures":"layering","imageFormat":"2","imageName":"csi-vol-b2c0d5c7-5198-11ec-98a5-0242ac110005","journalPool":"replicapool","pool":"replicapool","storage.kubernetes.io/csiProvisionerIdentity":"1638246703311-8081-rook-ceph.rbd.csi.ceph.com"},"volume_id":"0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005"}
+I1130 04:52:31.310119    7055 nodeserver.go:708] ID: 49 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 target /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/efa4eb3a-2501-4d28-bf2e-471cd982a5f9
+isBlock true
+fstype 
+stagingPath /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005
+readonly false
+mountflags [bind _netdev]
+I1130 04:52:31.314943    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:52:31.314961    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:52:31.314967    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:52:31.314976    7055 mount_linux.go:146] Mounting cmd (mount) with arguments ( -o bind,_netdev /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/efa4eb3a-2501-4d28-bf2e-471cd982a5f9)
+I1130 04:52:31.316708    7055 mount_linux.go:146] Mounting cmd (mount) with arguments ( -o bind,remount,_netdev /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/efa4eb3a-2501-4d28-bf2e-471cd982a5f9)
+I1130 04:52:31.317923    7055 nodeserver.go:607] ID: 49 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 rbd: successfully mounted stagingPath /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/staging/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 to targetPath /var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/pvc-7aba346e-76e5-4c30-a235-1c48269c9d01/efa4eb3a-2501-4d28-bf2e-471cd982a5f9
+I1130 04:52:31.317966    7055 utils.go:188] ID: 49 Req-ID: 0001-0009-rook-ceph-0000000000000001-b2c0d5c7-5198-11ec-98a5-0242ac110005 GRPC response: {}
+I1130 04:52:37.458795    7055 utils.go:177] ID: 50 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:52:37.458891    7055 utils.go:181] ID: 50 GRPC request: {}
+I1130 04:52:37.459003    7055 utils.go:188] ID: 50 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:52:37.460013    7055 utils.go:177] ID: 51 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:52:37.460072    7055 utils.go:181] ID: 51 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:52:37.466990    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:52:37.467012    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:52:37.467021    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:52:37.467167    7055 utils.go:188] ID: 51 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:52:40.832869    7055 utils.go:177] ID: 52 GRPC call: /csi.v1.Identity/Probe
+I1130 04:52:40.832978    7055 utils.go:181] ID: 52 GRPC request: {}
+I1130 04:52:40.833017    7055 utils.go:188] ID: 52 GRPC response: {}
+I1130 04:53:40.832248    7055 utils.go:177] ID: 53 GRPC call: /csi.v1.Identity/Probe
+I1130 04:53:40.832470    7055 utils.go:181] ID: 53 GRPC request: {}
+I1130 04:53:40.832561    7055 utils.go:188] ID: 53 GRPC response: {}
+I1130 04:54:00.433308    7055 utils.go:177] ID: 54 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:54:00.433359    7055 utils.go:181] ID: 54 GRPC request: {}
+I1130 04:54:00.433420    7055 utils.go:188] ID: 54 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:54:00.433929    7055 utils.go:177] ID: 55 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:54:00.434031    7055 utils.go:181] ID: 55 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:54:00.438655    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:54:00.438672    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:54:00.438679    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:54:00.438817    7055 utils.go:188] ID: 55 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}
+I1130 04:54:40.831847    7055 utils.go:177] ID: 56 GRPC call: /csi.v1.Identity/Probe
+I1130 04:54:40.831925    7055 utils.go:181] ID: 56 GRPC request: {}
+I1130 04:54:40.831964    7055 utils.go:188] ID: 56 GRPC response: {}
+I1130 04:55:06.141074    7055 utils.go:177] ID: 57 GRPC call: /csi.v1.Node/NodeGetCapabilities
+I1130 04:55:06.141113    7055 utils.go:181] ID: 57 GRPC request: {}
+I1130 04:55:06.141172    7055 utils.go:188] ID: 57 GRPC response: {"capabilities":[{"Type":{"Rpc":{"type":1}}},{"Type":{"Rpc":{"type":2}}},{"Type":{"Rpc":{"type":3}}}]}
+I1130 04:55:06.141579    7055 utils.go:177] ID: 58 GRPC call: /csi.v1.Node/NodeGetVolumeStats
+I1130 04:55:06.141629    7055 utils.go:181] ID: 58 GRPC request: {"volume_id":"0001-0009-rook-ceph-0000000000000001-539034ea-5197-11ec-98a5-0242ac110005","volume_path":"/var/lib/kubelet/pods/584c4576-8940-4d71-b3ff-a3e4c2c4c0f4/volumes/kubernetes.io~csi/pvc-e4a9f88f-2917-4d28-8f0b-8b948d08dccb/mount"}
+I1130 04:55:06.146245    7055 mount_linux.go:173] Cannot run systemd-run, assuming non-systemd OS
+I1130 04:55:06.146259    7055 mount_linux.go:174] systemd-run failed with: exit status 1
+I1130 04:55:06.146265    7055 mount_linux.go:175] systemd-run output: System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to create bus connection: Host is down
+I1130 04:55:06.146343    7055 utils.go:188] ID: 58 GRPC response: {"usage":[{"available":1003900928,"total":1023303680,"unit":1,"used":2625536},{"available":65525,"total":65536,"unit":2,"used":11}]}

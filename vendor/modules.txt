@@ -148,7 +148,7 @@ github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hashicorp/errwrap v1.1.0
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-cleanhttp v0.5.1
+# github.com/hashicorp/go-cleanhttp v0.5.2
 github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-hclog v0.16.2
 github.com/hashicorp/go-hclog
@@ -191,7 +191,7 @@ github.com/hashicorp/hcl/json/token
 # github.com/hashicorp/vault v1.4.2
 github.com/hashicorp/vault/command/agent/auth
 github.com/hashicorp/vault/command/agent/auth/kubernetes
-# github.com/hashicorp/vault/api v1.3.0
+# github.com/hashicorp/vault/api v1.3.1
 ## explicit
 github.com/hashicorp/vault/api
 # github.com/hashicorp/vault/sdk v0.3.0

@@ -199,8 +199,8 @@ func (ns *NodeServer) NodeUnpublishVolume(ctx context.Context, req *csi.NodeUnpu
 		return nil, err
 	}
 
-	// considering kubelet make sure node operations like unpublish/unstage...etc can not be called
-	// at same time, an explicit locking at time of nodeunpublish is not required.
+	// Considering kubelet make sure the stage and publish operations
+	// are serialized, we dont need any extra locking in nodePublish.
 	volumeID := req.GetVolumeId()
 	targetPath := req.GetTargetPath()
 	log.DebugLog(ctx, "nfs: unmounting volume %s on %s", volumeID, targetPath)

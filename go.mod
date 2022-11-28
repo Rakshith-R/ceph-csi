@@ -28,7 +28,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
-	google.golang.org/grpc v1.49.0
+	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.0
 	k8s.io/api v0.25.0
 	k8s.io/apimachinery v0.25.0
@@ -149,7 +149,7 @@ require (
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

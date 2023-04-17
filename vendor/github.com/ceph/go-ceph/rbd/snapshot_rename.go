@@ -1,6 +1,3 @@
-//go:build ceph_preview
-// +build ceph_preview
-
 package rbd
 
 // #cgo LDFLAGS: -lrbd
@@ -15,7 +12,8 @@ import (
 // Rename a snapshot.
 //
 // Implements:
-// 	int rbd_snap_rename(rbd_image_t image, const char *snapname,
+//
+//	int rbd_snap_rename(rbd_image_t image, const char *snapname,
 //				 const char* dstsnapsname);
 func (snapshot *Snapshot) Rename(destName string) error {
 	if err := snapshot.validate(imageNeedsIOContext | imageIsOpen | imageNeedsName | snapshotNeedsName); err != nil {

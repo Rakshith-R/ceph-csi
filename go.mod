@@ -4,11 +4,11 @@ go 1.19
 
 require (
 	github.com/IBM/keyprotect-go-client v0.10.0
-	github.com/aws/aws-sdk-go v1.44.267
+	github.com/aws/aws-sdk-go v1.44.275
 	github.com/aws/aws-sdk-go-v2/service/sts v1.19.0
 	github.com/ceph/ceph-csi/api v0.0.0-00010101000000-000000000000
 	// TODO: API for managing subvolume metadata and snapshot metadata requires `ceph_ci_untested` build-tag
-	github.com/ceph/go-ceph v0.21.0
+	github.com/ceph/go-ceph v0.22.0
 	github.com/container-storage-interface/spec v1.8.0
 	github.com/csi-addons/replication-lib-utils v0.2.0
 	github.com/csi-addons/spec v0.2.0
@@ -26,7 +26,7 @@ require (
 	github.com/onsi/gomega v1.27.6
 	github.com/pkg/xattr v0.4.9
 	github.com/prometheus/client_golang v1.15.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.9.0
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.8.0

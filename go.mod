@@ -4,15 +4,15 @@ go 1.20
 
 require (
 	github.com/IBM/keyprotect-go-client v0.12.2
-	github.com/aws/aws-sdk-go v1.45.7
-	github.com/aws/aws-sdk-go-v2/service/sts v1.21.5
+	github.com/aws/aws-sdk-go v1.45.19
+	github.com/aws/aws-sdk-go-v2/service/sts v1.22.0
 	github.com/ceph/ceph-csi/api v0.0.0-00010101000000-000000000000
 	// TODO: API for managing subvolume metadata and snapshot metadata requires `ceph_ci_untested` build-tag
 	github.com/ceph/go-ceph v0.23.0
 	github.com/container-storage-interface/spec v1.8.0
 	github.com/csi-addons/replication-lib-utils v0.2.0
 	github.com/csi-addons/spec v0.2.1-0.20230606140122-d20966d2e444
-	github.com/gemalto/kmip-go v0.0.9
+	github.com/gemalto/kmip-go v0.0.10
 	github.com/golang/protobuf v1.5.3
 	github.com/google/fscrypt v0.3.4
 	github.com/google/uuid v1.3.1
@@ -20,12 +20,12 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/vault/api v1.10.0
 	github.com/kubernetes-csi/csi-lib-utils v0.14.0
-	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.2.0
+	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.3.0
 	github.com/libopenstorage/secrets v0.0.0-20210908194121-a1d19aa9713a
-	github.com/onsi/ginkgo/v2 v2.12.0
-	github.com/onsi/gomega v1.27.10
+	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/gomega v1.28.0
 	github.com/pkg/xattr v0.4.9
-	github.com/prometheus/client_golang v1.16.0
+	github.com/prometheus/client_golang v1.17.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.13.0
 	golang.org/x/net v0.15.0
@@ -68,7 +68,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
@@ -130,9 +130,9 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus/client_model v0.4.0 // indirect
+	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
-	github.com/prometheus/procfs v0.10.1 // indirect
+	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

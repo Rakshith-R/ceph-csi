@@ -116,6 +116,8 @@ type rbdImage struct {
 	ParentName string
 	// Parent Pool is the pool that contains the parent image.
 	ParentPool string
+	// ParentInTrash is set to true if the parent image is in trash.
+	ParentInTrash bool
 	// Cluster name
 	ClusterName string
 
@@ -1596,6 +1598,7 @@ func (ri *rbdImage) getImageInfo() error {
 
 	// Get parent information.
 	parentInfo, err := image.GetParent()
+	fmt.Printf("I am here: %v, parent: %v, error: %v", parentInfo, ri, err)
 	if err != nil {
 		// Caller should decide whether not finding
 		// the parent is an error or not.
@@ -1607,6 +1610,7 @@ func (ri *rbdImage) getImageInfo() error {
 	} else {
 		ri.ParentName = parentInfo.Image.ImageName
 		ri.ParentPool = parentInfo.Image.PoolName
+		ri.ParentInTrash = parentInfo.Image.Trash
 	}
 	// Get image creation time
 	tm, err := image.GetCreateTimestamp()
@@ -1620,13 +1624,13 @@ func (ri *rbdImage) getImageInfo() error {
 }
 
 // getParent returns parent image if it exists.
-func (ri *rbdImage) getParent() (*rbdImage, error) {
+func (ri *rbdImage) getParent() (*rbdImage, bool, error) {
 	err := ri.getImageInfo()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	if ri.ParentName == "" {
-		return nil, nil
+	if ri.ParentName == "" || ri.ParentInTrash {
+		return nil, ri.ParentInTrash, nil
 	}
 
 	parentImage := rbdImage{}
@@ -1639,18 +1643,24 @@ func (ri *rbdImage) getParent() (*rbdImage, error) {
 
 	err = parentImage.getImageInfo()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return &parentImage, nil
+	return &parentImage, false, nil
 }
 
 // flattenParent flatten the given image's parent if it exists according to hard and soft
 // limits.
 func (ri *rbdImage) flattenParent(ctx context.Context, hardLimit, softLimit uint) error {
-	parentImage, err := ri.getParent()
+	parentImage, parentInTrash, err := ri.getParent()
 	if err != nil {
 		return err
+	}
+
+	if parentInTrash {
+		log.DebugLog(ctx, "parent image is in trash, skipping flatten")
+
+		return nil
 	}
 
 	if parentImage == nil {

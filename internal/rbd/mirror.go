@@ -25,29 +25,31 @@ import (
 	librbd "github.com/ceph/go-ceph/rbd"
 )
 
-// EnableImageMirroring enables mirroring on an image.
-func (ri *rbdImage) EnableImageMirroring(mode librbd.ImageMirrorMode) error {
+// CheckParentImageMirroring returns InvalidStateErr if the parent image
+// - is in trash
+// - is not enabled for mirroring
+// and return err if there is any other error.
+func (ri *rbdImage) CheckParentImageMirroring() (invalidStateErr, err error) {
 	image, err := ri.open()
 	if err != nil {
-		return fmt.Errorf("failed to open image %q with error: %w", ri, err)
+		return nil, fmt.Errorf("failed to open image %q with error: %w", ri, err)
 	}
 	defer image.Close()
 
 	parent, parentInTrash, err := ri.getParent()
 	if err != nil {
-		return fmt.Errorf("failed to enable mirroring on image %q:"+
-			" failed to get parent: %w", ri, err)
+		return nil, fmt.Errorf("failed to get parent of image %q: %w", ri, err)
 	}
 
 	if parentInTrash {
 		return fmt.Errorf("failed to enable mirroring on image %q:"+
-			" parent is in trash", ri)
+			" parent is in trash", ri), nil
 	}
 
 	if parent != nil {
 		parentMirroringInfo, err := parent.GetImageMirroringInfo()
 		if err != nil {
-			return fmt.Errorf("failed to enable mirroring on image %q:"+
+			return nil, fmt.Errorf("failed to enable mirroring on image %q:"+
 				" failed to get mirroring info of parent %q: %w",
 				ri, parent, err)
 		}
@@ -55,9 +57,20 @@ func (ri *rbdImage) EnableImageMirroring(mode librbd.ImageMirrorMode) error {
 		if parentMirroringInfo.State != librbd.MirrorImageEnabled {
 			return fmt.Errorf("failed to enable mirroring on image %q:"+
 				"parent image %q is not enabled for mirroring",
-				ri, parent)
+				ri, parent), nil
 		}
 	}
+
+	return nil, nil
+}
+
+// EnableImageMirroring enables mirroring on an image.
+func (ri *rbdImage) EnableImageMirroring(mode librbd.ImageMirrorMode) error {
+	image, err := ri.open()
+	if err != nil {
+		return fmt.Errorf("failed to open image %q with error: %w", ri, err)
+	}
+	defer image.Close()
 
 	err = image.MirrorEnable(mode)
 	if err != nil {

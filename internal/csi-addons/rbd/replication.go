@@ -274,6 +274,18 @@ func (rs *ReplicationServer) EnableVolumeReplication(ctx context.Context,
 	}
 
 	if mirroringInfo.State != librbd.MirrorImageEnabled {
+		invalidStateErr, err := rbdVol.CheckParentImageMirroring()
+		if invalidStateErr != nil {
+			log.ErrorLog(ctx, err.Error())
+
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if err != nil {
+			log.ErrorLog(ctx, err.Error())
+
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
 		err = rbdVol.EnableImageMirroring(mirroringMode)
 		if err != nil {
 			log.ErrorLog(ctx, err.Error())

@@ -3609,6 +3609,27 @@ var _ = Describe("RBD", func() {
 						validateOmapCount(f, 1, rbdType, defaultRBDPool, volumesType)
 						validateOmapCount(f, 0, rbdType, defaultRBDPool, snapsType)
 
+						// create pvc-pvc clone
+						smartClonePVC, err := loadPVC(pvcSmartClonePath)
+						if err != nil {
+							framework.Failf("failed to load smart clone PVC: %v", err)
+						}
+
+						smartClonePVC.Name = fmt.Sprintf("%s-%d", smartClonePVC.Name, i)
+						smartClonePVC.Namespace = f.UniqueName
+						smartClonePVC.Spec.DataSource.Name = pvcClone.Name
+						err = createPVCAndvalidatePV(f.ClientSet, smartClonePVC, deployTimeout)
+						if err != nil {
+							framework.Failf("failed to create smart clone PVC %q: %v",
+								smartClonePVC.Name, err)
+						}
+
+						err = deletePVCAndValidatePV(f.ClientSet, smartClonePVC, deployTimeout)
+						if err != nil {
+							framework.Failf("failed to delete smart clone PVC %q: %v",
+								smartClonePVC.Name, err)
+						}
+
 						app.Spec.Volumes[0].PersistentVolumeClaim.ClaimName = pvcClone.Name
 						// create application
 						err = createApp(f.ClientSet, app, deployTimeout)

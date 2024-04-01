@@ -41,7 +41,7 @@ jobs:
           Add comment to trigger external storage tests for Kubernetes
           ${{ matrix.k8s }}
         if: ${{ github.base_ref == matrix.branch }}
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.CEPH_CSI_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -52,7 +52,7 @@ jobs:
           Add comment to trigger helm E2E tests for Kubernetes
           ${{ matrix.k8s }}
         if: ${{ github.base_ref == matrix.branch }}
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.CEPH_CSI_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -60,7 +60,7 @@ jobs:
             /test ci/centos/mini-e2e-helm/k8s-${{ matrix.k8s }}
 
       - name: Add comment to trigger E2E tests for Kubernetes ${{ matrix.k8s }}
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         if: ${{ github.base_ref == matrix.branch }}
         with:
           token: ${{ secrets.CEPH_CSI_BOT_TOKEN }}
@@ -77,7 +77,7 @@ jobs:
 
     steps:
       - name: Add comment to trigger cephfs upgrade tests
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.CEPH_CSI_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -85,7 +85,7 @@ jobs:
             /test ci/centos/upgrade-tests-cephfs
 
       - name: Add comment to trigger rbd upgrade tests
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.CEPH_CSI_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}

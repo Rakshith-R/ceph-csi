@@ -98,12 +98,12 @@ func (rv *rbdVolume) checkCloneImage(ctx context.Context, parentVol *rbdVolume) 
 
 		return false, err
 	}
-	err = tempClone.deleteSnapshot(ctx, snap)
-	if err != nil {
-		log.ErrorLog(ctx, "failed to delete snapshot: %v", err)
+	// err = tempClone.deleteSnapshot(ctx, snap)
+	// if err != nil {
+	// 	log.ErrorLog(ctx, "failed to delete snapshot: %v", err)
 
-		return false, err
-	}
+	// 	return false, err
+	// }
 
 	return true, nil
 }

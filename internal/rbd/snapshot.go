@@ -56,16 +56,16 @@ func createRBDClone(
 			snap.RbdSnapName,
 			err)
 	}
-	errSnap := parentVol.deleteSnapshot(ctx, snap)
-	if errSnap != nil {
-		log.ErrorLog(ctx, "failed to delete snapshot: %v", errSnap)
-		delErr := cloneRbdVol.Delete(ctx)
-		if delErr != nil {
-			log.ErrorLog(ctx, "failed to delete rbd image: %s with error: %v", cloneRbdVol, delErr)
-		}
+	// errSnap := parentVol.deleteSnapshot(ctx, snap)
+	// if errSnap != nil {
+	// 	log.ErrorLog(ctx, "failed to delete snapshot: %v", errSnap)
+	// 	delErr := cloneRbdVol.Delete(ctx)
+	// 	if delErr != nil {
+	// 		log.ErrorLog(ctx, "failed to delete rbd image: %s with error: %v", cloneRbdVol, delErr)
+	// 	}
 
-		return err
-	}
+	// 	return err
+	// }
 
 	return nil
 }

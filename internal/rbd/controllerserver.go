@@ -1676,3 +1676,196 @@ func (cs *ControllerServer) ControllerUnpublishVolume(
 
 	return &csi.ControllerUnpublishVolumeResponse{}, nil
 }
+
+// GetSnapshotMetadata is
+func (cs *ControllerServer) GetMetadataAllocated(
+	req *csi.GetMetadataAllocatedRequest,
+	stream csi.SnapshotMetadata_GetMetadataAllocatedServer,
+) error {
+	ctx := stream.Context()
+	cr, err := util.NewUserCredentials(req.GetSecrets())
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	defer cr.DeleteCredentials()
+
+	snapshotID := req.GetSnapshotId()
+	if snapshotID == "" {
+		return status.Error(codes.InvalidArgument, "snapshot ID cannot be empty")
+	}
+
+	rbdSnap, err := genSnapFromSnapID(ctx, snapshotID, cr, req.GetSecrets())
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	defer rbdSnap.Destroy(ctx)
+
+	return rbdSnap.getDiff(stream, req.GetStartingOffset(), req.GetMaxResults(), "")
+}
+
+func (rbdSnap *rbdSnapshot) getDiff(
+	stream csi.SnapshotMetadata_GetMetadataAllocatedServer,
+	startingOffset int64,
+	maxResults int32,
+	snapName string) error {
+	image, err := rbdSnap.open()
+	if err != nil {
+		return err
+	}
+	err = image.SetSnapshot(rbdSnap.RbdSnapName)
+	if err != nil {
+		return err
+	}
+	changedBlocks := make([]*csi.BlockMetadata, 0)
+	diffIterateConfig := librbd.DiffIterateConfig{
+		Offset: uint64(startingOffset),
+		Length: uint64(rbdSnap.VolSize),
+		Callback: func(o, l uint64, _ int, _ interface{}) int {
+			select {
+			case <-stream.Context().Done():
+				return -1
+			default:
+				changedBlocks = append(
+					changedBlocks,
+					&csi.BlockMetadata{
+						ByteOffset: int64(o),
+						SizeBytes:  int64(l),
+					})
+			}
+			if int32(len(changedBlocks)) >= maxResults {
+				err := stream.Send(&csi.GetMetadataAllocatedResponse{
+					BlockMetadataType:   csi.BlockMetadataType_VARIABLE_LENGTH,
+					VolumeCapacityBytes: rbdSnap.VolSize,
+					BlockMetadata:       changedBlocks,
+				})
+				if err != nil {
+					return -2
+				}
+				changedBlocks = make([]*csi.BlockMetadata, 0)
+			}
+			return 0
+		},
+	}
+
+	if snapName != "" {
+		diffIterateConfig.SnapName = snapName
+	}
+
+	err = image.DiffIterate(diffIterateConfig)
+	errno, ok := err.(interface{ ErrorCode() int })
+	if !ok {
+		return status.Error(codes.Internal, fmt.Sprintf("failed to get diff: %d", errno))
+	}
+	switch errno.ErrorCode() {
+	case 0:
+		return nil
+	case -1:
+		return status.Error(codes.Canceled, "operation canceled")
+	case -2:
+		return status.Error(codes.Internal, "failed to send response")
+	}
+
+	return status.Error(codes.Internal, fmt.Sprintf("failed to get diff: %d", errno))
+}
+
+func (cs *ControllerServer) GetMetadataDelta(
+	req *csi.GetMetadataDeltaRequest,
+	stream csi.SnapshotMetadata_GetMetadataDeltaServer,
+) error {
+	ctx := stream.Context()
+	cr, err := util.NewUserCredentials(req.GetSecrets())
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	defer cr.DeleteCredentials()
+
+	baseSnapshotID := req.GetBaseSnapshotId()
+	if baseSnapshotID == "" {
+		return status.Error(codes.InvalidArgument, "base snapshot ID cannot be empty")
+	}
+
+	targetSnapshotID := req.GetTargetSnapshotId()
+	if targetSnapshotID == "" {
+		return status.Error(codes.InvalidArgument, "base snapshot ID cannot be empty")
+	}
+
+	baseRBDSnap, err := genSnapFromSnapID(ctx, baseSnapshotID, cr, req.GetSecrets())
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	defer baseRBDSnap.Destroy(ctx)
+
+	targetRBDSnap, err := genSnapFromSnapID(ctx, targetSnapshotID, cr, req.GetSecrets())
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	defer targetRBDSnap.Destroy(ctx)
+
+	return baseRBDSnap.getDiff2(stream, req.GetStartingOffset(), req.GetMaxResults(),
+		targetRBDSnap.RbdImageName)
+}
+
+func (rbdSnap *rbdSnapshot) getDiff2(
+	stream csi.SnapshotMetadata_GetMetadataDeltaServer,
+	startingOffset int64,
+	maxResults int32,
+	snapName string) error {
+	image, err := rbdSnap.open()
+	if err != nil {
+		return err
+	}
+	err = image.SetSnapshot(rbdSnap.RbdSnapName)
+	if err != nil {
+		return err
+	}
+	changedBlocks := make([]*csi.BlockMetadata, 0)
+	diffIterateConfig := librbd.DiffIterateConfig{
+		Offset: uint64(startingOffset),
+		Length: uint64(rbdSnap.VolSize),
+		Callback: func(o, l uint64, _ int, _ interface{}) int {
+			select {
+			case <-stream.Context().Done():
+				return -1
+			default:
+				changedBlocks = append(
+					changedBlocks,
+					&csi.BlockMetadata{
+						ByteOffset: int64(o),
+						SizeBytes:  int64(l),
+					})
+			}
+			if int32(len(changedBlocks)) >= maxResults {
+				err := stream.Send(&csi.GetMetadataDeltaResponse{
+					BlockMetadataType:   csi.BlockMetadataType_VARIABLE_LENGTH,
+					VolumeCapacityBytes: rbdSnap.VolSize,
+					BlockMetadata:       changedBlocks,
+				})
+				if err != nil {
+					return -2
+				}
+				changedBlocks = make([]*csi.BlockMetadata, 0)
+			}
+			return 0
+		},
+	}
+
+	if snapName != "" {
+		diffIterateConfig.SnapName = snapName
+	}
+
+	err = image.DiffIterate(diffIterateConfig)
+	errno, ok := err.(interface{ ErrorCode() int })
+	if !ok {
+		return status.Error(codes.Internal, fmt.Sprintf("failed to get diff: %d", errno))
+	}
+	switch errno.ErrorCode() {
+	case 0:
+		return nil
+	case -1:
+		return status.Error(codes.Canceled, "operation canceled")
+	case -2:
+		return status.Error(codes.Internal, "failed to send response")
+	}
+
+	return status.Error(codes.Internal, fmt.Sprintf("failed to get diff: %d", errno))
+}

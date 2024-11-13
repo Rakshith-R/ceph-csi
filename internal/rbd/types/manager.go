@@ -18,6 +18,8 @@ package types
 
 import (
 	"context"
+
+	"github.com/ceph/ceph-csi/internal/util"
 )
 
 // VolumeResolver can be used to construct a Volume from a CSI VolumeId.
@@ -44,6 +46,9 @@ type Manager interface {
 
 	// Destroy frees all resources that the Manager allocated.
 	Destroy(ctx context.Context)
+
+	// Getcredentials sets up credentials and connects to the journal.
+	GetCredentials() (*util.Credentials, error)
 
 	// GetVolumeGroupByID uses the CSI-Addons VolumeGroupId to resolve the
 	// returned VolumeGroup.

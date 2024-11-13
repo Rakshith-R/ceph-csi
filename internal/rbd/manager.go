@@ -66,8 +66,8 @@ func (mgr *rbdManager) Destroy(ctx context.Context) {
 	}
 }
 
-// getCredentials sets up credentials and connects to the journal.
-func (mgr *rbdManager) getCredentials() (*util.Credentials, error) {
+// GetCredentials sets up credentials and connects to the journal.
+func (mgr *rbdManager) GetCredentials() (*util.Credentials, error) {
 	if mgr.creds != nil {
 		return mgr.creds, nil
 	}
@@ -87,7 +87,7 @@ func (mgr *rbdManager) getVolumeGroupJournal(clusterID string) (journal.VolumeGr
 		return mgr.vgJournal, nil
 	}
 
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (mgr *rbdManager) getGroupUUID(
 }
 
 func (mgr *rbdManager) GetVolumeByID(ctx context.Context, id string) (types.Volume, error) {
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (mgr *rbdManager) GetVolumeByID(ctx context.Context, id string) (types.Volu
 }
 
 func (mgr *rbdManager) GetSnapshotByID(ctx context.Context, id string) (types.Snapshot, error) {
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (mgr *rbdManager) GetSnapshotByID(ctx context.Context, id string) (types.Sn
 }
 
 func (mgr *rbdManager) GetVolumeGroupByID(ctx context.Context, id string) (types.VolumeGroup, error) {
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (mgr *rbdManager) GetVolumeGroupByID(ctx context.Context, id string) (types
 }
 
 func (mgr *rbdManager) CreateVolumeGroup(ctx context.Context, name string) (types.VolumeGroup, error) {
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func (mgr *rbdManager) GetVolumeGroupSnapshotByID(
 	ctx context.Context,
 	id string,
 ) (types.VolumeGroupSnapshot, error) {
-	creds, err := mgr.getCredentials()
+	creds, err := mgr.GetCredentials()
 	if err != nil {
 		return nil, err
 	}

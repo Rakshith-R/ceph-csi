@@ -1190,7 +1190,7 @@ func (cs *ControllerServer) CreateSnapshot(
 		return cloneFromSnapshot(ctx, rbdVol, rbdSnap, cr, req.GetParameters())
 	}
 
-	err = flattenTemporaryClonedImages(ctx, rbdVol, cr)
+	err = rbdVol.PrepareVolumeForSnapshot(ctx, cr)
 	if err != nil {
 		return nil, err
 	}
@@ -1406,11 +1406,6 @@ func (cs *ControllerServer) doSnapshotClone(
 	if err != nil {
 		log.ErrorLog(ctx, "failed to reserve volume id: %v", err)
 
-		return cloneRbd, err
-	}
-
-	err = cloneRbd.flattenRbdImage(ctx, false, rbdHardMaxCloneDepth, rbdSoftMaxCloneDepth)
-	if err != nil {
 		return cloneRbd, err
 	}
 

@@ -130,6 +130,17 @@ func (cs *ControllerServer) CreateVolumeGroupSnapshot(
 			"failed to get existing one with name %q: %v", vgsName, err)
 	}
 
+	creds, err := mgr.GetCredentials()
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	for _, volume := range volumes {
+		err = volume.PrepareVolumeForSnapshot(ctx, creds)
+		if err != nil {
+			return nil, status.Error(codes.Aborted, err.Error())
+		}
+	}
+
 	// create a temporary VolumeGroup with a different name
 	vg, err = mgr.CreateVolumeGroup(ctx, vgName)
 	if err != nil {

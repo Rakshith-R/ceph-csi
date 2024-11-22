@@ -456,6 +456,22 @@ func (v *volumeGroupSnapshotterBase) testVolumeGroupSnapshot(vol VolumeGroupSnap
 		return fmt.Errorf("failed to create volume group snapshot: %w", err)
 	}
 
+	// Create and delete 5 additional group snapshots to test flattening on minSnapshotLimit
+	for i := range 5 {
+		newVGSName := fmt.Sprintf("%s-%d", vgsName, i)
+		_, err = v.CreateVolumeGroupSnapshot(newVGSName, vgscName, pvcLabels)
+		if err != nil {
+			return fmt.Errorf("failed to create volume group snapshot %q: %w", newVGSName, err)
+		}
+	}
+	for i := range 5 {
+		newVGSName := fmt.Sprintf("%s-%d", vgsName, i)
+		err = v.DeleteVolumeGroupSnapshot(newVGSName)
+		if err != nil {
+			return fmt.Errorf("failed to delete volume group snapshot %q: %w", newVGSName, err)
+		}
+	}
+
 	clonePVCs, err := v.CreatePVCClones(volumeGroupSnapshot)
 	if err != nil {
 		return fmt.Errorf("failed to create clones: %w", err)

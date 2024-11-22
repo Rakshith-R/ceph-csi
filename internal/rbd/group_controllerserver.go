@@ -134,11 +134,15 @@ func (cs *ControllerServer) CreateVolumeGroupSnapshot(
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	errList := make([]error, 0)
 	for _, volume := range volumes {
 		err = volume.PrepareVolumeForSnapshot(ctx, creds)
 		if err != nil {
-			return nil, status.Error(codes.Aborted, err.Error())
+			errList = append(errList, err)
 		}
+	}
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "failed to prepare volumes for snapshot: %v", errList)
 	}
 
 	// create a temporary VolumeGroup with a different name

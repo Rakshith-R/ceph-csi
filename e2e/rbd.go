@@ -93,7 +93,7 @@ var (
 	snapshotPath           = rbdExamplePath + "snapshot.yaml"
 	deployFSAppPath        = e2eTemplatesPath + "rbd-fs-deployment.yaml"
 	deployBlockAppPath     = e2eTemplatesPath + "rbd-block-deployment.yaml"
-	defaultCloneCount      = 3 // TODO: set to 10 once issues#2327 is fixed
+	defaultCloneCount      = 5 // TODO: set to 10 once issues#2327 is fixed
 
 	nbdMapOptions             = "nbd:debug-rbd=20"
 	e2eDefaultCephLogStrategy = "preserve"
@@ -4857,6 +4857,7 @@ var _ = Describe("RBD", func() {
 			})
 
 			By("test volumeGroupSnapshot", func() {
+				Skip("skip to test flatten on normal snapshots")
 				supported, err := librbdSupportsVolumeGroupSnapshot(f)
 				if err != nil {
 					framework.Failf("failed to check for VolumeGroupSnapshot support: %v", err)

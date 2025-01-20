@@ -4,10 +4,10 @@ go 1.22.0
 
 require (
 	github.com/IBM/keyprotect-go-client v0.14.3
-	github.com/aws/aws-sdk-go v1.55.0
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.3
 	github.com/ceph/ceph-csi/api v0.0.0-00010101000000-000000000000
-	github.com/ceph/go-ceph v0.28.0
+	github.com/ceph/go-ceph v0.31.0
 	github.com/container-storage-interface/spec v1.10.0
 	github.com/csi-addons/spec v0.2.1-0.20240718113938-dc98b454ba65
 	github.com/gemalto/kmip-go v0.0.10
@@ -24,10 +24,10 @@ require (
 	github.com/onsi/gomega v1.33.1
 	github.com/pkg/xattr v0.4.10
 	github.com/prometheus/client_golang v1.19.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.25.0
 	golang.org/x/net v0.27.0
-	golang.org/x/sys v0.22.0
+	golang.org/x/sys v0.27.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 	//

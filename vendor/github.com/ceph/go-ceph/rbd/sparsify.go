@@ -60,7 +60,7 @@ func (image *Image) SparsifyWithProgress(
 ) error {
 	// the provided callback must be a real function
 	if cb == nil {
-		return rbdError(C.EINVAL)
+		return getError(C.EINVAL)
 	}
 
 	if err := image.validate(imageIsOpen); err != nil {
@@ -72,7 +72,7 @@ func (image *Image) SparsifyWithProgress(
 		data:     data,
 	}
 	cbIndex := sparsifyCallbacks.Add(ctx)
-	defer diffIterateCallbacks.Remove(cbIndex)
+	defer sparsifyCallbacks.Remove(cbIndex)
 
 	ret := C.wrap_rbd_sparsify_with_progress(image.image, C.size_t(sparseSize), C.uintptr_t(cbIndex))
 

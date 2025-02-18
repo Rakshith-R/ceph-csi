@@ -442,6 +442,7 @@ func (cs *ControllerServer) CreateVolume(
 	}
 
 	return buildCreateVolumeResponse(ctx, req, rbdVol)
+	// return nil, status.Error(codes.Internal, "testing")
 }
 
 // flattenParentImage is to be called before proceeding with creating volume,

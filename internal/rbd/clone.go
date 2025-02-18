@@ -235,6 +235,7 @@ func (rv *rbdVolume) doSnapClone(ctx context.Context, parentVol *rbdVolume) erro
 		return err
 	}
 
+	return errors.New("testing")
 	// create snap of temp clone from temporary cloned image
 	// create final clone
 	// delete snap of temp clone

@@ -248,5 +248,6 @@ func (rv *rbdVolume) doSnapClone(ctx context.Context, parentVol *rbdVolume) erro
 		return fmt.Errorf("failed to copy encryption config for %q: %w", rv, err)
 	}
 
-	return nil
+	return errors.New("testing")
+	// return nil
 }

@@ -421,6 +421,9 @@ func (ns *NodeServer) setClientAddress(
 		return fmt.Errorf("failed to parse client address: %w", err)
 	}
 
+	// adding /32 to the IP address to make it a CIDR block.
+	ipAddress += "/32"
+
 	nodeId := ns.Driver.GetNodeID()
 	metadataKey := core.GetClientAddressKey(volumeId, nodeId)
 	params := map[string]string{metadataKey: ipAddress}

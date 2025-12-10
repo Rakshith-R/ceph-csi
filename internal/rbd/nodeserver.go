@@ -505,6 +505,9 @@ func (ns *NodeServer) setClientAddress(
 		return fmt.Errorf("failed to parse client address: %w", err)
 	}
 
+	// adding /32 to the IP address to make it a CIDR block.
+	ipAddress += "/32"
+
 	err = rv.SetMetadata(metadataKey, ipAddress)
 	if err != nil {
 		return fmt.Errorf("failed to set client address for %s: %w", rv, err)

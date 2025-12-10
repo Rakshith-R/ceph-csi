@@ -26,13 +26,17 @@ import (
 	"strings"
 	"time"
 
+	osdAdmin "github.com/ceph/go-ceph/common/admin/osd"
 	"github.com/csi-addons/spec/lib/go/fence"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/ceph/ceph-csi/internal/util"
 	"github.com/ceph/ceph-csi/internal/util/log"
 )
 
 const (
+	ISO8601TimeLayout = "2006-01-02T15:04:05.000000-0700"
 	blocklistTime     = "157784760"
 	invalidCommandStr = "invalid command"
 	// we can always use mds rank 0, since all the clients have a session with rank-0.
@@ -451,4 +455,141 @@ func (nf *NetworkFence) parseBlocklistForCIDR(ctx context.Context, blocklist, ci
 	}
 
 	return matchingHosts
+}
+
+// GetFenceClients fetches the ceph cluster ID and the client address that need to be fenced.
+func GetFenceClients(
+	ctx context.Context,
+	req *fence.GetFenceClientsRequest,
+) (*fence.GetFenceClientsResponse, error) {
+	options := req.GetParameters()
+	clusterID, err := util.GetClusterID(options)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	cr, err := util.NewUserCredentials(req.GetSecrets())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	defer cr.DeleteCredentials()
+
+	monitors, _ /* clusterID*/, err := util.GetMonsAndClusterID(ctx, clusterID, false)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Get the cluster ID of the ceph cluster.
+	conn := &util.ClusterConnection{}
+	err = conn.Connect(monitors, cr)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to connect to MONs %q: %s", monitors, err)
+	}
+	defer conn.Destroy()
+
+	fsID, err := conn.GetFSID()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get cephfs id: %s", err)
+	}
+
+	address, err := conn.GetAddrs()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get client address: %s", err)
+	}
+
+	// The example address we get is 10.244.0.1:0/2686266785 from
+	// which we need to extract the IP address.
+	addr, err := util.ParseClientIP(address)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to parse client address: %s", err)
+	}
+
+	// adding /32 to the IP address to make it a CIDR block.
+	addr += "/32"
+
+	resp := &fence.GetFenceClientsResponse{
+		Clients: []*fence.ClientDetails{
+			{
+				Id: fsID,
+				Addresses: []*fence.CIDR{
+					{
+						Cidr: addr,
+					},
+				},
+			},
+		},
+	}
+
+	err = autoUnfenceClientOnMatch(ctx, conn, addr)
+	if err != nil {
+		log.ErrorLog(ctx, "failed to auto unfence client: %s", err)
+
+		return nil, status.Errorf(codes.Internal,
+			"failed to unfence client: %s", err)
+	}
+
+	return resp, nil
+}
+
+// autoUnfenceClientOnMatch removes the client address from the blocklist
+// if it matches an entry with 'until' time less than or equal to
+// AutoBlocklistTime duration.
+func autoUnfenceClientOnMatch(
+	ctx context.Context,
+	conn *util.ClusterConnection,
+	addr string,
+) error {
+	blocklistAdmin, err := conn.GetOSDAdmin()
+	if err != nil {
+		return err
+	}
+
+	list, err := blocklistAdmin.OSDBlocklist()
+	if err != nil {
+		return err
+	}
+
+	foundMatch, err := containsMatchingBlockListEntry(list, addr)
+	if err != nil {
+		return err
+	}
+	if !foundMatch {
+		return nil
+	}
+
+	log.DebugLog(ctx, "auto-unfencing client with address %q", addr)
+	entry := osdAdmin.AddressEntry{
+		Addr: addr,
+	}
+
+	return blocklistAdmin.OSDBlocklistRemove(entry)
+}
+
+// containsMatchingBlockListEntry checks if the provided address exists in the blocklist
+// with a valid expiry time less than or equal to AutoBlocklistTime duration.
+func containsMatchingBlockListEntry(
+	blocklist *[]osdAdmin.Blocklist,
+	addr string,
+) (bool, error) {
+	for _, entry := range *blocklist {
+		// blocklist list entry contains ':0' port in the address while
+		// go-ceph validation fails if we provide port in the addr.
+		// Therefore, use the modified address with ':0' only for comparison.
+		cephAddr := strings.TrimSuffix(addr, "/32") + ":0/32"
+		if strings.Compare(entry.Addr, cephAddr) != 0 {
+			continue
+		}
+		// Until is in ISO8601 format.
+		until, err := time.Parse(ISO8601TimeLayout, entry.Until)
+		if err != nil {
+			return false, fmt.Errorf("failed to parse blocklist entry time %q: %w",
+				entry.Until, err)
+		}
+
+		if until.Sub(time.Now()) <= util.AutoBlocklistTime {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

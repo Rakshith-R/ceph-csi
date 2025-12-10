@@ -18,7 +18,10 @@ package networkfence
 
 import (
 	"testing"
+	"time"
 
+	"github.com/ceph/ceph-csi/internal/util"
+	osdAdmin "github.com/ceph/go-ceph/common/admin/osd"
 	"github.com/stretchr/testify/require"
 )
 
@@ -253,6 +256,99 @@ listed 1 entries`,
 
 			result := nf.parseBlocklistForCIDR(t.Context(), tc.blocklist, tc.cidr)
 			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func Test_containsMatchingBlockListEntry(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		blocklist *[]osdAdmin.Blocklist
+		addr      string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "matching entry found",
+			args: args{
+				blocklist: &[]osdAdmin.Blocklist{
+					{
+						Addr:  "192.0.1.0:0/32",
+						Until: time.Now().Format(ISO8601TimeLayout),
+					},
+					{
+						Addr:  "192.0.2.0:0/32",
+						Until: time.Now().Format(ISO8601TimeLayout),
+					},
+				},
+				addr: "192.0.1.0/32",
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "address does not match",
+			args: args{
+				blocklist: &[]osdAdmin.Blocklist{
+					{
+						Addr:  "193.0.1.0:0/32",
+						Until: time.Now().Format(ISO8601TimeLayout),
+					},
+					{
+						Addr:  "192.0.2.0:0/32",
+						Until: time.Now().Format(ISO8601TimeLayout),
+					},
+				},
+				addr: "192.0.1.0/32",
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name: "addr matches but fenced for max duration",
+			args: args{
+				blocklist: &[]osdAdmin.Blocklist{
+					{
+						Addr:  "192.0.1.0:0/32",
+						Until: time.Now().Add(util.MaxBlocklistTime).Format(ISO8601TimeLayout),
+					},
+				},
+				addr: "192.0.1.0/32",
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name: "Until is not in ISO8601 format",
+			args: args{
+				blocklist: &[]osdAdmin.Blocklist{
+					{
+						Addr:  "192.0.1.0:0/32",
+						Until: time.Now().Format(time.RFC3339),
+					},
+				},
+				addr: "192.0.1.0/32",
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := containsMatchingBlockListEntry(tt.args.blocklist, tt.args.addr)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("containsMatchingBlockListEntry() error = %v, wantErr %v", err, tt.wantErr)
+
+				return
+			}
+			if got != tt.want {
+				t.Errorf("containsMatchingBlockListEntry() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

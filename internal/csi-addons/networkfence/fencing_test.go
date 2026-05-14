@@ -350,11 +350,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now().Add(1 * time.Hour),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now().Add(1 * time.Hour),
 					},
 				},
@@ -368,11 +368,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime - blockListCoolDownPeriod),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime - blockListCoolDownPeriod),
 					},
 				},
@@ -386,11 +386,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime),
 					},
 				},
@@ -404,11 +404,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime - 2*time.Minute),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now().Add(util.AutoBlocklistTime - 2*time.Minute),
 					},
 				},
@@ -454,11 +454,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now(),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now(),
 					},
 				},
@@ -472,11 +472,11 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::3:0/128",
+						Addr:  "[2001:db8::3]:0/128",
 						Until: time.Now(),
 					},
 					{
-						Addr:  "2001:db8::2:0/128",
+						Addr:  "[2001:db8::2]:0/128",
 						Until: time.Now(),
 					},
 				},
@@ -490,7 +490,7 @@ func Test_containsMatchingBlockListEntry(t *testing.T) {
 			args: args{
 				blocklist: &[]osdAdmin.Blocklist{
 					{
-						Addr:  "2001:db8::1:0/128",
+						Addr:  "[2001:db8::1]:0/128",
 						Until: time.Now().Add(util.MaxBlocklistTime),
 					},
 				},
@@ -544,25 +544,25 @@ func Test_matchEntry(t *testing.T) {
 		},
 		{
 			name:     "IPv6 match with /128 suffix",
-			actual:   "2001:db8::1:0/128",
+			actual:   "[2001:db8::1]:0/128",
 			expected: "2001:db8::1",
 			want:     true,
 		},
 		{
 			name:     "IPv6 match without /128 suffix",
-			actual:   "2001:db8::1:0/123213",
+			actual:   "[2001:db8::1]:0/123213",
 			expected: "2001:db8::1",
 			want:     false,
 		},
 		{
 			name:     "IPv6 no match different IPs",
-			actual:   "2001:db8::2:0/128",
+			actual:   "[2001:db8::2]:0/128",
 			expected: "2001:db8::1",
 			want:     false,
 		},
 		{
 			name:     "IPv6 compressed notation match",
-			actual:   "fd4a:ecbc:cafd:4e49::1:0/128",
+			actual:   "[fd4a:ecbc:cafd:4e49::1]:0/128",
 			expected: "fd4a:ecbc:cafd:4e49::1",
 			want:     true,
 		},

@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"time"
@@ -362,7 +363,12 @@ func RemoveCephBlocklist(ctx context.Context, monitors string, cr *Credentials, 
 		// If nonce is not empty and we are not using
 		// range based blocks, we need to add the nonce
 		if nonce != "" {
-			clientAddr = fmt.Sprintf("%s:0/%s", ip, nonce)
+			parsedIP := net.ParseIP(ip)
+			if parsedIP != nil && parsedIP.To4() == nil {
+				clientAddr = fmt.Sprintf("[%s]:0/%s", ip, nonce)
+			} else {
+				clientAddr = fmt.Sprintf("%s:0/%s", ip, nonce)
+			}
 		} else {
 			clientAddr = ip
 		}

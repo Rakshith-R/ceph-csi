@@ -100,6 +100,8 @@ var (
 	clusterID          string
 	nfsDriverName      string
 	operatorDeployment bool
+	skipVault          bool
+	kmsConfigMapCreated bool
 	monsCache          = make(map[string][]string)
 )
 
@@ -2145,4 +2147,21 @@ func deleteSubvolumegroup(f *framework.Framework, fileSystemName, subvolumegroup
 func logAndFail(message string, args ...any) {
 	framework.Logf(message, args...)
 	framework.Failf(message, args...)
+}
+
+func createEmptyKMSConfigMap(c kubernetes.Interface, ns string) error {
+	if kmsConfigMapCreated {
+		return nil
+	}
+	cm := &v1.ConfigMap{}
+	cm.Name = "ceph-csi-encryption-kms-config"
+	cm.Namespace = ns
+	cm.Data = map[string]string{"config.json": "{}"}
+	_, err := c.CoreV1().ConfigMaps(ns).Create(context.TODO(), cm, metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to create empty KMS configmap: %w", err)
+	}
+	kmsConfigMapCreated = true
+
+	return nil
 }

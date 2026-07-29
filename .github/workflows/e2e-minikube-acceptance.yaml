@@ -89,10 +89,12 @@ jobs:
         env:
           CONTAINER_CMD: docker
 
-      - name: Load ceph-csi + sidecar images
-        run: |
-          scripts/minikube.sh cephcsi
-          scripts/minikube.sh k8s-sidecar
+      - name: Load sidecar images
+        run: scripts/minikube.sh k8s-sidecar
+
+      - name: Deploy ceph-csi-operator
+        run: >-
+          scripts/deploy-ceph-csi-operator.sh deploy
 
       - name: Build e2e.test
         run: make e2e.test
@@ -102,16 +104,16 @@ jobs:
           cd e2e && ../e2e.test \
             -test.v -ginkgo.v \
             --ginkgo.label-filter=acceptance \
-            --ginkgo.timeout=15m \
+            --ginkgo.timeout=25m \
             --deploy-timeout=10 \
             --test-rbd=true \
             --test-cephfs=true \
             --test-nfs=true \
             --test-nvmeof=false \
-            --deploy-rbd=true \
-            --deploy-cephfs=true \
-            --skip-vault=true \
-            --cephcsi-namespace=default
+            --deploy-rbd=false \
+            --deploy-cephfs=false \
+            --operator-deployment \
+            --skip-vault=true
 
       - name: Collect logs on failure
         if: failure()

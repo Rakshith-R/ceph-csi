@@ -106,7 +106,7 @@ collect_logs() {
   LOG_DIR="/tmp/acceptance-e2e-logs"
   mkdir -p "${LOG_DIR}"
   # Rook-Ceph namespace
-  for ns in rook-ceph default; do
+  for ns in rook-ceph default ceph-csi-operator-system; do
     kubectl -n "${ns}" get pods -o wide > "${LOG_DIR}/${ns}-pods.txt" 2>&1 || true
     kubectl -n "${ns}" get events --sort-by='.lastTimestamp' > "${LOG_DIR}/${ns}-events.txt" 2>&1 || true
     for pod in $(kubectl -n "${ns}" get pods -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do

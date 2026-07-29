@@ -38,6 +38,7 @@ import (
 	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	scv1 "k8s.io/api/storage/v1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -2158,7 +2159,7 @@ func createEmptyKMSConfigMap(c kubernetes.Interface, ns string) error {
 	cm.Namespace = ns
 	cm.Data = map[string]string{"config.json": "{}"}
 	_, err := c.CoreV1().ConfigMaps(ns).Create(context.TODO(), cm, metav1.CreateOptions{})
-	if err != nil {
+	if err != nil && !apierrs.IsAlreadyExists(err) {
 		return fmt.Errorf("failed to create empty KMS configmap: %w", err)
 	}
 	kmsConfigMapCreated = true

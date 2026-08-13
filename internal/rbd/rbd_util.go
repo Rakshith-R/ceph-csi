@@ -165,6 +165,9 @@ type rbdImage struct {
 
 	// ParentInTrash indicates the parent image is in trash.
 	ParentInTrash bool
+	// ParentImageID is the image ID of the parent image, populated by
+	// getImageInfo(). Valid even when the parent is in trash.
+	ParentImageID string
 
 	// RBD QoS configuration
 	QosParameters map[string]string
@@ -1811,6 +1814,9 @@ func (ri *rbdImage) getImageInfo() error {
 		// the parent is an error or not.
 		if errors.Is(err, librbd.ErrNotFound) {
 			ri.ParentName = ""
+			ri.ParentPool = ""
+			ri.ParentInTrash = false
+			ri.ParentImageID = ""
 		} else {
 			return err
 		}
@@ -1818,6 +1824,7 @@ func (ri *rbdImage) getImageInfo() error {
 		ri.ParentName = parentInfo.Image.ImageName
 		ri.ParentPool = parentInfo.Image.PoolName
 		ri.ParentInTrash = parentInfo.Image.Trash
+		ri.ParentImageID = parentInfo.Image.ImageID
 	}
 	// Get image creation time
 	tm, err := image.GetCreateTimestamp()

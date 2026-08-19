@@ -989,8 +989,7 @@ func (cs *ControllerServer) checkErrAndUndoReserve(
 	}
 
 	if errors.Is(err, rbderrors.ErrImageNotFound) {
-		notFoundErr := rbdVol.ensureImageCleanup(ctx)
-		if notFoundErr != nil {
+		if notFoundErr := rbdVol.removeImageFromTrash(ctx); notFoundErr != nil {
 			return nil, status.Errorf(codes.Internal, "failed to cleanup image %q: %v", rbdVol, notFoundErr)
 		}
 	} else {
@@ -1162,7 +1161,9 @@ func cleanupRBDImage(ctx context.Context,
 	}
 
 	// delete the temporary rbd image created as part of volume clone during
-	// create volume
+	// create volume. This must run before rbdVol.Delete() so the volume
+	// image still exists and its parent info (ParentImageID) can identify
+	// a trashed temp clone without scanning the trash list.
 	err = rbdVol.DeleteTempImage(ctx)
 	if err != nil {
 		log.ErrorLog(ctx, "failed to delete temporary rbd image: %v", err)
@@ -1641,9 +1642,9 @@ func cleanUpImageAndSnapReservation(ctx context.Context, rbdSnap *rbdSnapshot, c
 	defer rbdVol.Destroy(ctx)
 
 	// cleanup the image from trash if the error is image not found.
-	err = rbdVol.ensureImageCleanup(ctx)
+	err = rbdVol.removeImageFromTrash(ctx)
 	if err != nil {
-		log.ErrorLog(ctx, "failed to delete rbd image: %q with error: %v", rbdVol.Pool, rbdVol.VolName, err)
+		log.ErrorLog(ctx, "failed to delete rbd image %q: %v", rbdVol, err)
 
 		return status.Error(codes.Internal, err.Error())
 	}
@@ -1791,21 +1792,12 @@ func (cs *ControllerServer) getServiceAccountRestriction(
 	req *csi.ControllerPublishVolumeRequest,
 ) (string, error) {
 	volumeID := req.GetVolumeId()
-	secrets := req.GetSecrets()
-
-	if secrets == nil {
-		secretName, secretNamespace, err := util.GetControllerPublishSecretRef(volumeID, util.RBDType)
-		if err != nil {
-			log.WarningLog(ctx, "controller publish secret not found: %v", err)
-
-			return "", nil
-		}
-
-		secrets, err = k8s.GetSecret(secretName, secretNamespace)
-		if err != nil {
-			return "", status.Errorf(codes.Internal,
-				"failed to get controller publish secret from k8s: %v", err)
-		}
+	secrets, skip, err := util.GetControllerPublishSecrets(ctx, req.GetSecrets(), volumeID, util.RBDType)
+	if skip {
+		return "", nil
+	}
+	if err != nil {
+		return "", status.Error(codes.Internal, err.Error())
 	}
 
 	cr, err := util.NewUserCredentials(secrets)
@@ -1863,21 +1855,12 @@ func (cs *ControllerServer) ControllerUnpublishVolume(
 	}
 	defer cs.VolumeLocks.Release(volumeId)
 
-	secrets := req.GetSecrets()
-	if secrets == nil {
-		secretName, secretNamespace, err := util.GetControllerPublishSecretRef(volumeId, util.RBDType)
-		if err != nil {
-			log.WarningLog(ctx, "controller publish secret not found: %v", err)
-
-			// If the secret is not found, return success to not break for older PVs
-			// without controller-publish secrets.
-			return &csi.ControllerUnpublishVolumeResponse{}, nil
-		}
-
-		secrets, err = k8s.GetSecret(secretName, secretNamespace)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get controller publish secret from k8s: %w", err)
-		}
+	secrets, skip, err := util.GetControllerPublishSecrets(ctx, req.GetSecrets(), volumeId, util.RBDType)
+	if skip {
+		return &csi.ControllerUnpublishVolumeResponse{}, nil
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	credentials, err := util.NewAdminCredentials(secrets)

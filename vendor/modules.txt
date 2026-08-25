@@ -1185,7 +1185,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubernetes v1.36.3
+# k8s.io/kubernetes v1.36.4
 ## explicit; go 1.26.0
 k8s.io/kubernetes/pkg/api/v1/pod
 k8s.io/kubernetes/pkg/features

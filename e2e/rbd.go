@@ -428,19 +428,22 @@ var _ = Describe("RBD", func() {
 			nbdMapOptions = "nbd:debug-rbd=20,io-timeout=330"
 		}
 
+		// Patch the OperatorConfig before the fencing call, which is the only
+		// one that waits for the rollout. This way a single rollout covers
+		// all the patches instead of triggering a second one later.
 		err = rbdDeployment.setDomainLabels([]string{nodeRegionLabel, nodeZoneLabel})
 		if err != nil {
 			logAndFail("failed to set domain labels: %v", err)
 		}
 
-		err = rbdDeployment.setEnableFencing(true)
-		if err != nil {
-			logAndFail("failed to enable fencing: %v", err)
-		}
-
 		err = rbdDeployment.setClusterName(defaultClusterName)
 		if err != nil {
 			logAndFail("failed to set cluster name: %v", err)
+		}
+
+		err = rbdDeployment.setEnableFencing(true)
+		if err != nil {
+			logAndFail("failed to enable fencing: %v", err)
 		}
 	}, OncePerOrdered)
 

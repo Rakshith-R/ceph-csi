@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
+	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
 )
 
 const (
@@ -85,6 +87,19 @@ func (OperatorDeployment) setClusterName(value string) error {
 }
 
 func (r OperatorDeployment) setEnableFencing(enable bool) error {
+	// Skip the patch and the rollout wait when the value is already applied.
+	// Otherwise the generation never changes and the wait burns its full
+	// reconcile grace period.
+	current, err := getOperatorConfigField(cephCSINamespace, "{.spec.driverSpecDefaults.enableFencing}")
+	if err != nil {
+		return err
+	}
+	if current == strconv.FormatBool(enable) {
+		framework.Logf("enableFencing is already %t, skipping OperatorConfig patch", enable)
+
+		return nil
+	}
+
 	oldGeneration, err := getDeploymentGeneration(r.clientSet, r.deploymentName, cephCSINamespace)
 	if err != nil {
 		return fmt.Errorf("failed to get deployment generation before patching: %w", err)
@@ -123,6 +138,25 @@ func (r OperatorDeployment) setEnableFencing(enable bool) error {
 	}
 
 	return nil
+}
+
+// getOperatorConfigField returns the value at jsonPath in the OperatorConfig,
+// or an empty string when the field is not set.
+func getOperatorConfigField(namespace, jsonPath string) (string, error) {
+	args := []string{
+		"get",
+		"operatorconfigs.csi.ceph.io",
+		OperatorConfigName,
+		"-o",
+		"jsonpath=" + jsonPath,
+	}
+
+	out, err := e2ekubectl.RunKubectl(namespace, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to get operator config field %s: %w", jsonPath, err)
+	}
+
+	return strings.TrimSpace(out), nil
 }
 
 func getDeploymentGeneration(c clientset.Interface, name, ns string) (int64, error) {
